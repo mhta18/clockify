@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import RequestOTPView, VerifyOTPView
+from rest_framework.routers import DefaultRouter
+from .views import AuthViewSet
 
-urlpatterns = [
-    path('request-otp/', RequestOTPView.as_view(), name='request-otp'),
-    path('verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
-]
+router = DefaultRouter()
+router.register("auth", AuthViewSet, basename="auth")
+
+urlpatterns = router.urls

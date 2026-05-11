@@ -1,76 +1,120 @@
-from datetime import timedelta
-
-from django.shortcuts import render
-from rest_framework.views import APIView
-from rest_framework.response import Response    
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.tokens import RefreshToken
-from .models import LoginOTP
-from .serializaers import RequestOTPSerializer,VerifyOTPSerializer
-from .services import send_otp_email
-from .utils import generate_otp
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema
 
-# Create your views here.
+from datetime import timedelta
 
-class RequestOTPView(APIView):
-    def post(self, request):
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import LoginOTP
+from .serializers import (
+    RequestOTPSerializer,
+    VerifyOTPSerializer,
+)
+
+from .utils import generate_otp
+from .services import send_otp_email
+
+User = get_user_model()
+
+
+class AuthViewSet(viewsets.ViewSet):
+
+    @extend_schema(
+        request=RequestOTPSerializer,
+    )
+    
+    @action(detail=False, methods=["post"])
+    def request_otp(self, request):
+
         serializer = RequestOTPSerializer(data=request.data)
 
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            code = generate_otp()
-            LoginOTP.objects.create(email=email, code=code)
-            send_otp_email(email, code)
-            return Response({"message": "OTP sent to your email!"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
-class VerifyOTPView(APIView):
-    def post(self, request):
+        email = serializer.validated_data["email"]
 
-            serializer = VerifyOTPSerializer(data=request.data)
+        try:
+            User.objects.get(email=email)
 
-            serializer.is_valid(raise_exception=True)
+        except User.DoesNotExist:
 
-            email = serializer.validated_data["email"]
-            code = serializer.validated_data["code"]
+            return Response(
+                {"error": "Invalid credentials"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-            otp = LoginOTP.objects.filter(email=email,code=code,is_used=False).last()
+        code = generate_otp().upper()
 
-            if not otp:
-                return Response(
-                    {"error": "Invalid code"},
-                    status=400
-                )
-            
+        LoginOTP.objects.create(
+            email=email,
+            code=code,
+        )
 
-            if otp.created_at + timedelta(minutes=settings.OTP_EXPIRE_MINUTES) < timezone.now():
-                return Response(
-                    {"error": "Code expired!"},
-                    status=400
-                )
-            otp.is_used = True
-            otp.save()
+        send_otp_email(email, code)
 
-            # find user
-            from django.contrib.auth import get_user_model
+        return Response({"message": "OTP sent successfully"})
 
-            User = get_user_model()
+    @extend_schema(
+        request=VerifyOTPSerializer,
+    )
+    @action(detail=False, methods=["post"])
+    def verify_otp(self, request):
 
-            try:
-                user = User.objects.get(email=email)
+        serializer = VerifyOTPSerializer(data=request.data)
 
-            except User.DoesNotExist:
-                return Response(
-                    {"error": "User does not exist"},
-                    status=404
-                )
+        serializer.is_valid(raise_exception=True)
 
-            refresh = RefreshToken.for_user(user)
+        email = serializer.validated_data["email"]
 
-            return Response({
+        code = serializer.validated_data["code"].upper()
+
+        otp = LoginOTP.objects.filter(
+            email=email,
+            code=code,
+            is_used=False,
+        ).last()
+
+        if not otp:
+
+            return Response(
+                {"error": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if (
+            otp.created_at + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
+            < timezone.now()
+        ):
+
+            return Response(
+                {"error": "Code expired"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        otp.is_used = True
+        otp.save()
+
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
-            })
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "is_admin": user.is_admin,
+                },
+            }
+        )
