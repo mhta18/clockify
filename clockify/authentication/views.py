@@ -22,6 +22,7 @@ from .services import send_otp_email
 
 User = get_user_model()
 
+# url_path = method name
 
 class AuthViewSet(viewsets.ViewSet):
 
