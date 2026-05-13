@@ -36,25 +36,61 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(
+    AbstractBaseUser,
+    PermissionsMixin,
+):
+
+    GENDER_CHOICES = (
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    )
 
     email = models.EmailField(unique=True)
 
-    first_name = models.CharField(max_length=255, blank=True)
-    last_name = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    last_name = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+
+    gender = models.CharField(
+        max_length=20,
+        choices=GENDER_CHOICES,
+        blank=True,
+    )
+
+    birth_date = models.DateField(
+        null=True,
+        blank=True,
+    )
 
     is_active = models.BooleanField(default=True)
+
     is_staff = models.BooleanField(default=False)
 
     is_admin = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = UserManager()
+    updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = "email"
 
     REQUIRED_FIELDS = []
 
+    objects = UserManager()
+
     def __str__(self):
-        return self.email 
+
+        return self.email

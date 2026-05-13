@@ -13,3 +13,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     first_name = "lion"
 
     last_name = "lion"
+
+    is_active = True
+
+    is_admin = False
