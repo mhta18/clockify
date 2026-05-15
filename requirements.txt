@@ -1,4 +1,4 @@
-Django==5.1.1
+Django==6.0.5
 djangorestframework==3.15.2
 
 psycopg2-binary==2.9.9
@@ -16,3 +16,11 @@ pytest==8.3.3
 pytest-django==4.9.0
 
 gunicorn==23.0.0
+
+psycopg2-binary==2.9.9
+
+mssql-django==1.5
+pyodbc==5.1.0
+
+drf-spectacular
+drf-spectacular-sidecar

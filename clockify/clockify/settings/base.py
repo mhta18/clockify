@@ -58,7 +58,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 ROOT_URLCONF = 'clockify.urls'
 
-OTP_EXPIRE_MINUTES = 2
+OTP_EXPIRE_MINUTES = 5
 
 TEMPLATES = [
     {

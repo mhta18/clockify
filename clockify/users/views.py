@@ -1,13 +1,69 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema
+from rest_framework import status, viewsets,generics,mixins
+from rest_framework.response import Response
+
 
 from .models import User
 from .permissions import IsAdminUser
 from .serializers import UserSerializer
+from rest_framework.parsers import MultiPartParser,FormParser
 
 
-class UserViewSet(viewsets.ModelViewSet):
+@extend_schema(
+    # This forces Swagger to stop expecting a URI string
+    # and start expecting a Binary file.
+    request={"multipart/form-data": UserSerializer},
+)
+class UserListAPIView(generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+
+
+class UserViewSet(
+
+    mixins.RetrieveModelMixin,
+
+    mixins.CreateModelMixin,
+
+    mixins.UpdateModelMixin,
+
+    mixins.DestroyModelMixin,
+
+    viewsets.GenericViewSet,
+):
+
+    queryset = User.objects.all()
+
+    serializer_class = UserSerializer
+
+    permission_classes = [IsAdminUser]
+
+    parser_classes = (
+        MultiPartParser,
+        FormParser
+    )
+    @extend_schema(
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'avatar': {
+                        'type': 'string',
+                        'format': 'binary' # This is the "magic" line for Swagger
+                    },
+                    # Add other fields here if you want them to show up in the same form
+                    'first_name': {'type': 'string'},
+                    'last_name': {'type': 'string'},
+                    'gender': {'type': 'string'},
+                    'birth_date': {'type': 'string', 'format': 'date'},
+                    'phone_number': {'type': 'string'},
+                    'email': {'type': 'string', 'format': 'email'},
+                }
+            }
+        }
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)

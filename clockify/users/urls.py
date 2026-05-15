@@ -1,8 +1,13 @@
 from  rest_framework.routers import DefaultRouter
+from django.urls import path, include
 
-from .views import UserViewSet
+from .views import UserViewSet,UserListAPIView
 
 router = DefaultRouter()
 router.register("users", UserViewSet, basename='users')
 
-urlpatterns = router.urls
+urlpatterns = [
+ path("list/", UserListAPIView.as_view(), name="user-list"),
+ path("", include(router.urls))
+]
+

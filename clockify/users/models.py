@@ -1,10 +1,14 @@
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+from django.conf import settings
+import os
 
 # Create your models here.
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
-    BaseUserManager
+    BaseUserManager,
 )
 
 from django.db import models
@@ -75,6 +79,12 @@ class User(
         blank=True,
     )
 
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        null=True,
+        blank=True,
+    )
+
     is_active = models.BooleanField(default=True)
 
     is_staff = models.BooleanField(default=False)
@@ -94,3 +104,15 @@ class User(
     def __str__(self):
 
         return self.email
+
+
+# This decorator tells Django to run this function every time a User is deleted
+@receiver(post_delete, sender=User)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    """
+    Deletes file from filesystem
+    when corresponding User object is deleted.
+    """
+    if instance.avatar:
+        if os.path.isfile(instance.avatar.path):
+            os.remove(instance.avatar.path)

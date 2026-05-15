@@ -5,6 +5,7 @@ from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
 
+    avatar = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = User
         fields = (
@@ -14,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "phone_number",
             "gender",
+            "avatar",
             "birth_date",
             "is_active",
             "is_admin",

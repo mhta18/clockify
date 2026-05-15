@@ -23,3 +23,6 @@ DATABASES = {
 EMAIL_BACKEND = (
     "django.core.mail.backends.console.EmailBackend"
 )
+
+MEDIA_URL = "/media/" # access the uploaded file
+MEDIA_ROOT = BASE_DIR / "media" # store the file

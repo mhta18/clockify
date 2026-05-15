@@ -11,4 +11,4 @@ def test_is_admin_user_permission():
     user = type("User", (),{"is_authenticated": True, "is_admin": True})()
     request = type("Request", (), {"user": user})()
 
-    assert permission.has_permission(request, None) == True
+    assert permission.has_permission(request, None) 
