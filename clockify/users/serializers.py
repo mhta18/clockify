@@ -19,10 +19,14 @@ class UserSerializer(serializers.ModelSerializer):
             "birth_date",
             "is_active",
             "is_admin",
+            "created_at",
+            "updated_at",
         )
 
+        read_only_fields = ("created_at", "updated_at")
+
     def validate_avatar_size(self, attrs):
-       
+
         # Validate file extension and size
         valid_extension = ['jpg', 'jpeg', 'png']
         ext = os.path.splitext(attrs.name)[1][1:].lower()
@@ -35,9 +39,9 @@ class UserSerializer(serializers.ModelSerializer):
 
         if attrs.size > max_size:
             raise serializers.ValidationError("File size exceeds the maximum limit of 5MB.")
-        
+
         return attrs
-    
+
     def validate_avatar_name(self, attrs):
 
         request = self.context.get('request')
@@ -53,5 +57,3 @@ class UserSerializer(serializers.ModelSerializer):
                 f"File name must contain the user's first name, last name, or email prefix. Expected to find '{requeired_name}' in the file name."
             )
         return attrs
-  
-

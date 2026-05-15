@@ -6,6 +6,7 @@ from rest_framework.filters import OrderingFilter,SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 
+
 from .models import User
 from .permissions import IsAdminUser
 from .serializers import UserSerializer
@@ -27,8 +28,8 @@ class UserListAPIView(generics.ListAPIView):
     ordering_fields = ['first_name', 'last_name', 'country','gender']
     ordering = ["created_at"]
     search_fields = ['email', 'first_name']
-    filterset_fields = ['gender', 'country']
-
+    filterset_fields = ['gender', 'country', 'created_at']
+    
 class UserViewSet(
 
     mixins.RetrieveModelMixin,

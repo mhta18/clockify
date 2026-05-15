@@ -104,6 +104,7 @@ class User(
     USERNAME_FIELD = "email"
 
     REQUIRED_FIELDS = [gender]
+    
 
     objects = UserManager()
 
