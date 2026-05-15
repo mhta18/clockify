@@ -71,7 +71,8 @@ class User(
     gender = models.CharField(
         max_length=20,
         choices=GENDER_CHOICES,
-        blank=True,
+        blank=False,
+        null=False,
     )
 
     birth_date = models.DateField(
@@ -82,6 +83,11 @@ class User(
     avatar = models.ImageField(
         upload_to="avatars/",
         null=True,
+        blank=True,
+    )
+
+    country = models.CharField(
+        max_length=255,
         blank=True,
     )
 
@@ -97,7 +103,7 @@ class User(
 
     USERNAME_FIELD = "email"
 
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = [gender]
 
     objects = UserManager()
 

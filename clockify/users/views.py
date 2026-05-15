@@ -2,6 +2,8 @@ from django.shortcuts import render
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets,generics,mixins
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter,SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 from .models import User
@@ -20,7 +22,12 @@ class UserListAPIView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+    filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
 
+    ordering_fields = ['first_name', 'last_name', 'country','gender']
+    ordering = ["created_at"]
+    search_fields = ['email', 'first_name']
+    filterset_fields = ['gender', 'country']
 
 class UserViewSet(
 
@@ -57,7 +64,7 @@ class UserViewSet(
                     # Add other fields here if you want them to show up in the same form
                     'first_name': {'type': 'string'},
                     'last_name': {'type': 'string'},
-                    'gender': {'type': 'string'},
+                    'gender': {'type': 'string', 'enum': ['Male', 'Female', 'Other']},
                     'birth_date': {'type': 'string', 'format': 'date'},
                     'phone_number': {'type': 'string'},
                     'email': {'type': 'string', 'format': 'email'},
