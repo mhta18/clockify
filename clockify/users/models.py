@@ -106,13 +106,26 @@ class User(
         return self.email
 
 
-# This decorator tells Django to run this function every time a User is deleted
+# A Signal to delete the avatar file when the user is deleted
 @receiver(post_delete, sender=User)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
-    """
-    Deletes file from filesystem
-    when corresponding User object is deleted.
-    """
     if instance.avatar:
         if os.path.isfile(instance.avatar.path):
             os.remove(instance.avatar.path)
+
+# A Signal to delete the old avatar file when the user updates the avatar
+@receiver(models.signals.pre_save, sender=User)
+def auto_delete_file_on_change(instance, **kwargs):
+    if not instance.pk:
+        return False
+
+    try:
+        old_avatar = User.objects.get(pk=instance.pk).avatar
+    except User.DoesNotExist:
+        return False
+
+    new_avatar = instance.avatar
+
+    if not old_avatar == new_avatar:
+        if os.path.isfile(old_avatar.path):
+            os.remove(old_avatar.path)
