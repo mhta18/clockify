@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from drf_spectacular.utils import extend_schema
-from rest_framework import status, viewsets,generics,mixins
-from rest_framework.response import Response
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import viewsets,generics,mixins
 from rest_framework.filters import OrderingFilter,SearchFilter
+from rest_framework.renderers import JSONRenderer
+from drf_excel.renderers import XLSXRenderer
 from django_filters.rest_framework import DjangoFilterBackend
-
-
+from drf_excel.mixins import XLSXFileMixin
 
 from .models import User
 from .permissions import IsAdminUser
@@ -14,22 +15,33 @@ from rest_framework.parsers import MultiPartParser,FormParser
 
 
 @extend_schema(
-    # This forces Swagger to stop expecting a URI string
-    # and start expecting a Binary file.
-    request={"multipart/form-data": UserSerializer},
+    responses={
+        (
+            200,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ): OpenApiResponse(
+            response=OpenApiTypes.BINARY,
+            description="Excel export file",
+        ),
+    }
 )
-class UserListAPIView(generics.ListAPIView):
+class UserListAPIView(XLSXFileMixin, generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
     filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
-
-    ordering_fields = ['first_name', 'last_name', 'country','gender']
-    ordering = ["created_at"]
+    # sorting by created_at field
+    ordering_fields = ['first_name', 'last_name', 'country']
+    # searching by email and first_name fields
     search_fields = ['email', 'first_name']
+    # filtering by gender, country and created_at fields
     filterset_fields = ['gender', 'country', 'created_at']
-    
+
+    renderer_classes = [JSONRenderer,XLSXRenderer]
+    filename = "users.xlsx"
+
+
 class UserViewSet(
 
     mixins.RetrieveModelMixin,

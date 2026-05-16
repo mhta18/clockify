@@ -16,6 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
             "phone_number",
             "gender",
             "avatar",
+            "country",
+            'age',
             "birth_date",
             "is_active",
             "is_admin",

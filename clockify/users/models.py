@@ -86,6 +86,11 @@ class User(
         blank=True,
     )
 
+    age = models.PositiveIntegerField(
+        null=True,  
+        blank=True,
+    )
+
     country = models.CharField(
         max_length=255,
         blank=True,
