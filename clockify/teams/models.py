@@ -10,6 +10,7 @@ class Team(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField()
     description = models.TextField(blank=True,max_length=300)
+    logo = models.ImageField(upload_to='team_logos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="teams")
