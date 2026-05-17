@@ -30,6 +30,7 @@ AUTH_USER_MODEL = 'users.User'
 
 INSTALLED_APPS = [
     "users",
+    "teams",
     "authentication",
     "corsheaders",
     "rest_framework",
