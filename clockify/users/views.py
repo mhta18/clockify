@@ -72,9 +72,8 @@ class UserViewSet(
                 'properties': {
                     'avatar': {
                         'type': 'string',
-                        'format': 'binary' # This is the "magic" line for Swagger
+                        'format': 'binary'
                     },
-                    # Add other fields here if you want them to show up in the same form
                     'first_name': {'type': 'string'},
                     'last_name': {'type': 'string'},
                     'gender': {'type': 'string', 'enum': ['Male', 'Female', 'Other']},
