@@ -66,9 +66,9 @@ AVATAR_FORM_SCHEMA = {
 
 
 @extend_schema_view(
-    create=extend_schema(request=AVATAR_FORM_SCHEMA),  # POST /users/
-    update=extend_schema(request=AVATAR_FORM_SCHEMA),  # PUT /users/{id}/
-    partial_update=extend_schema(request=AVATAR_FORM_SCHEMA),  # PATCH /users/{id}/
+    create=extend_schema(request=AVATAR_FORM_SCHEMA), # POST /users/
+    update=extend_schema(request=AVATAR_FORM_SCHEMA), # PUT /users/{id}/
+    partial_update=extend_schema(request=AVATAR_FORM_SCHEMA), # PATCH /users/{id}/
 )
 
 class UserViewSet(
