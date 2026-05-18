@@ -9,5 +9,5 @@ router.register("users", UserViewSet, basename='users')
 urlpatterns = [
  path("list/", UserListAPIView.as_view(), name="user-list"),
  path("", include(router.urls)),
- path("users/export/", UserListAPIView.as_view(renderer_classes=[XLSXRenderer]), name="user-export"),
+ path("list/export/", UserListAPIView.as_view(renderer_classes=[XLSXRenderer]), name="user-export"),
 ]

@@ -7,6 +7,7 @@ from rest_framework.renderers import JSONRenderer
 from drf_excel.renderers import XLSXRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_excel.mixins import XLSXFileMixin
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import User
 from .permissions import IsAdminUser
@@ -25,6 +26,8 @@ from rest_framework.parsers import MultiPartParser,FormParser
         ),
     }
 )
+
+
 class UserListAPIView(XLSXFileMixin, generics.ListAPIView):
 
     queryset = User.objects.all()
@@ -41,6 +44,32 @@ class UserListAPIView(XLSXFileMixin, generics.ListAPIView):
     renderer_classes = [JSONRenderer,XLSXRenderer]
     filename = "users.xlsx"
 
+
+AVATAR_FORM_SCHEMA = {
+    "multipart/form-data": {
+        "type": "object",
+        "properties": {
+            "avatar": {
+                "type": "string",
+                "format": "binary",
+            },
+            "first_name": {"type": "string"},
+            "last_name": {"type": "string"},
+            "gender": {"type": "string", "enum": ["Male", "Female", "Other"]},
+            "birth_date": {"type": "string", "format": "date"},
+            "phone_number": {"type": "string"},
+            "email": {"type": "string", "format": "email"},
+        },
+    }
+}
+
+
+
+@extend_schema_view(
+    create=extend_schema(request=AVATAR_FORM_SCHEMA),  # POST /users/
+    update=extend_schema(request=AVATAR_FORM_SCHEMA),  # PUT /users/{id}/
+    partial_update=extend_schema(request=AVATAR_FORM_SCHEMA),  # PATCH /users/{id}/
+)
 
 class UserViewSet(
 
@@ -63,26 +92,5 @@ class UserViewSet(
 
     parser_classes = (
         MultiPartParser,
-        FormParser
+        FormParser,
     )
-    @extend_schema(
-        request={
-            'multipart/form-data': {
-                'type': 'object',
-                'properties': {
-                    'avatar': {
-                        'type': 'string',
-                        'format': 'binary'
-                    },
-                    'first_name': {'type': 'string'},
-                    'last_name': {'type': 'string'},
-                    'gender': {'type': 'string', 'enum': ['Male', 'Female', 'Other']},
-                    'birth_date': {'type': 'string', 'format': 'date'},
-                    'phone_number': {'type': 'string'},
-                    'email': {'type': 'string', 'format': 'email'},
-                }
-            }
-        }
-    )
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)

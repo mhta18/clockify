@@ -11,14 +11,13 @@ class TeamViewSet(viewsets.ModelViewSet):
 
     queryset = (
         Team.objects.all()
-        .annotate(member_count=Count("member"))
-        .prefetch_related("member")# reduce search timing and increase the speed of finding data. (n+1) 
+        .annotate(member_count=Count("members"))
+        .prefetch_related("members")# reduce search timing and increase the speed of finding data. (n+1) 
     )
-    queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
-    filterset_fields = ["created_at", "number_of_members"]
+    filterset_fields = ["created_at"]
     search_fields = ["name", "description"]
-    ordering_fields = ["created_at", "number_of_members", "name"]
+    ordering_fields = ["created_at", "name"]
