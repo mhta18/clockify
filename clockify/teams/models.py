@@ -18,21 +18,11 @@ class Team(models.Model):
 
 
     # supervisor has to exist in the list of members for each team
-    def clean(self):
-        super().clean()
-        if (
-            self.pk
-            and self.supervisor
-            and not self.members.filter(pk=self.supervisor.pk).exists()
-        ):
-            raise ValidationError(
-                {"supervisor": "The supervisor must be an active member of this team."}
-            )
-
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
-        self.full_clean()#calling method clean
+
         super().save(*args, **kwargs)
 
     def __str__(self):
