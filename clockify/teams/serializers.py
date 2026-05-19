@@ -18,7 +18,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
             "member_count",
-            # PUT request
+            # POST/PUT request
             "supervisor",
             "members",
             # Get request

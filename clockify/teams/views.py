@@ -45,3 +45,8 @@ class TeamViewSet(viewsets.ModelViewSet):
     filterset_fields = ["created_at"]
     search_fields = ["name", "description"]
     ordering_fields = ["created_at", "name"]
+
+    parser_classes = (
+        MultiPartParser,
+        FormParser,
+    )
