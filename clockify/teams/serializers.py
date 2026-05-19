@@ -4,9 +4,10 @@ from users.serializers import UserSerializer
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    members = UserSerializer(many=True)
-    supervisor = UserSerializer(source="supervisor",read_only=True)
+    supervisor_details = UserSerializer(source="supervisor", read_only=True)
+    members_details = UserSerializer(source="members", many=True, read_only=True)
     member_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Team
         fields = [
@@ -17,15 +18,17 @@ class TeamSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
             "member_count",
+            "supervisor",
             "members",
+            "supervisor_details",
+            "members_details",
         ]
-        read_only_fields = ["id", "slug", "created_at","member_count"]
+        read_only_fields = ["id", "slug", "created_at", "member_count"]
 
     def validate(self, data):
         supervisor = data.get("supervisor")
         members = data.get("members", [])
 
-        # If we are updating an existing instance, grab current members if not provided in payload
         if self.instance and "members" not in data:
             members = list(self.instance.members.all())
 
