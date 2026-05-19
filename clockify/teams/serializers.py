@@ -18,13 +18,15 @@ class TeamSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
             "member_count",
+            # PUT request
             "supervisor",
             "members",
+            # Get request
             "supervisor_details",
             "members_details",
         ]
         read_only_fields = ["id", "slug", "created_at", "member_count"]
-
+    #for post/put request to write the ID
     def validate(self, data):
         supervisor = data.get("supervisor")
         members = data.get("members", [])
