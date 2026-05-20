@@ -1,22 +1,55 @@
-from django.shortcuts import render
+from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import viewsets,generics,mixins
-from rest_framework.filters import OrderingFilter,SearchFilter
+
+from rest_framework import viewsets, generics, mixins
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import MultiPartParser, FormParser
+
+from users.ExcelReports.export_excel import export_excel
+
 from drf_excel.renderers import XLSXRenderer
-from django_filters.rest_framework import DjangoFilterBackend
-from drf_excel.mixins import XLSXFileMixin
+
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view
+
+from io import BytesIO
+
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import (
+    Font,
+    PatternFill,
+    Alignment,
+    Border,
+    Side,
+)
 
 from .models import User
 from .permissions import IsAdminUser
 from .serializers import UserSerializer
-from rest_framework.parsers import MultiPartParser,FormParser
 
 
 @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="format",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Format output type. Set to 'xlsx' to download an Excel sheet instead of JSON.",
+            enum=["xlsx"],
+            required=False,
+        )
+    ],
     responses={
+        (200, "application/json"): OpenApiResponse(
+            response=UserSerializer(many=True),
+            description="List of filtered users returned as JSON data on the web screen.",
+        ),
         (
             200,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -24,26 +57,54 @@ from rest_framework.parsers import MultiPartParser,FormParser
             response=OpenApiTypes.BINARY,
             description="Excel export file",
         ),
-    }
+    },
 )
-
-
-class UserListAPIView(XLSXFileMixin, generics.ListAPIView):
+class UserListAPIView(generics.ListAPIView):
 
     queryset = User.objects.all()
+
     serializer_class = UserSerializer
-    # permission_classes = [IsAdminUser]
-    filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
-    # sorting by created_at field
-    ordering_fields = ['first_name', 'last_name', 'country']
-    # searching by email and first_name fields
-    search_fields = ['email', 'first_name']
-    # filtering by gender, country and created_at fields
-    filterset_fields = ['gender', 'country', 'created_at']
 
-    renderer_classes = [JSONRenderer,XLSXRenderer]
-    filename = "users.xlsx"
+    permission_classes = [IsAdminUser]
 
+    renderer_classes = [JSONRenderer, XLSXRenderer]
+
+    filter_backends = [
+        OrderingFilter,
+        SearchFilter,
+        DjangoFilterBackend,
+    ]
+
+    ordering_fields = [
+        "first_name",
+        "last_name",
+        "country",
+        "created_at",
+    ]
+
+    search_fields = [
+        "email",
+        "first_name",
+        "last_name",
+    ]
+
+    filterset_fields = [
+        "gender",
+        "country",
+        "created_at",
+        "is_active",
+        "is_admin",
+    ]
+
+    def list(self, request, *args, **kwargs):
+
+        if request.query_params.get("format") == "xlsx":
+
+            return export_excel.export_excel(self)
+
+        return super().list(request, *args, **kwargs)
+
+    
 
 AVATAR_FORM_SCHEMA = {
     "multipart/form-data": {
@@ -64,23 +125,16 @@ AVATAR_FORM_SCHEMA = {
 }
 
 
-
 @extend_schema_view(
-    create=extend_schema(request=AVATAR_FORM_SCHEMA), # POST /users/
-    update=extend_schema(request=AVATAR_FORM_SCHEMA), # PUT /users/{id}/
-    partial_update=extend_schema(request=AVATAR_FORM_SCHEMA), # PATCH /users/{id}/
+    create=extend_schema(request=AVATAR_FORM_SCHEMA),  # POST /users/
+    update=extend_schema(request=AVATAR_FORM_SCHEMA),  # PUT /users/{id}/
+    partial_update=extend_schema(request=AVATAR_FORM_SCHEMA),  # PATCH /users/{id}/
 )
-
 class UserViewSet(
-
     mixins.RetrieveModelMixin,
-
     mixins.CreateModelMixin,
-
     mixins.UpdateModelMixin,
-
     mixins.DestroyModelMixin,
-
     viewsets.GenericViewSet,
 ):
 

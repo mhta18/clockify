@@ -9,19 +9,62 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+LOGS_DIR = BASE_DIR / "logs"
+LOG_FILE_PATH = str(LOGS_DIR / "api.log")
 
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {asctime} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_FILE_PATH,
+            "maxBytes": 1024 * 1024 * 5, 
+            "backupCount": 5,  
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "api_logger": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-r+q#t@%xhy1c$1m#gk(z9z#(+cgp^e(+gg-0!d1+c^l_xwj7h1'
-
 
 
 AUTH_USER_MODEL = 'users.User'
@@ -54,13 +97,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.APILoggingMiddleware'
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 ROOT_URLCONF = 'clockify.urls'
 
-OTP_EXPIRE_MINUTES = 5
+OTP_EXPIRE_MINUTES = 10
 
 TEMPLATES = [
     {
@@ -84,9 +128,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-
-    "DEFAULT_SCHEMA_CLASS": (
-        "drf_spectacular.openapi.AutoSchema"
+    "DEFAULT_SCHEMA_CLASS": ("drf_spectacular.openapi.AutoSchema"),
+    
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "drf_excel.renderers.XLSXRenderer",
     ),
 }
 
