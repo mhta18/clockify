@@ -17,17 +17,6 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParamet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from io import BytesIO
-
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import (
-    Font,
-    PatternFill,
-    Alignment,
-    Border,
-    Side,
-)
 
 from .models import User
 from .permissions import IsAdminUser
