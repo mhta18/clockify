@@ -5,6 +5,6 @@ from .models import User
 @admin.register(User)
 class CustomUserAdmin(admin.ModelAdmin):
     
-    list_display = ("email", "first_name", "last_name", "created_at", "updated_at")
+    list_display = ("id","email", "first_name", "last_name", "created_at", "updated_at")
 
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("id","created_at", "updated_at")

@@ -20,4 +20,13 @@ class Project(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-    
+    def save(self,*args,**kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            counter = 1
+            while self.__class__.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter +=1
+
+            self.slug = slug
+        super().save(*args,**kwargs)

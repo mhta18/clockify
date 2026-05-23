@@ -1,3 +1,4 @@
+import os
 from rest_framework import serializers
 from teams.models import Team
 from users.serializers import UserSerializer
@@ -26,7 +27,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "members_details",
         ]
         read_only_fields = ["id", "slug", "created_at", "member_count"]
-    #for post/put request to write the ID
+    # for post/put request to write the ID
     def validate(self, data):
         supervisor = data.get("supervisor")
         members = data.get("members", [])
@@ -41,3 +42,54 @@ class TeamSerializer(serializers.ModelSerializer):
                 }
             )
         return data
+
+    def to_internal_value(self, data):
+        internal_value = data.copy()
+
+        if "members" in internal_value:
+            raw_members = internal_value.getlist("members")
+
+        if len(raw_members) == 1 and "," in raw_members[0]:
+            raw_members = raw_members[0].split(",")
+
+        try:
+            internal_value.setlist("members", [int(m) for m in raw_members if str(m).strip().isdigit()])
+        except (ValueError, TypeError):
+            pass
+
+        return super().to_internal_value(internal_value)
+
+    def validate_Logo_size(self, attrs):
+
+        valid_extension = ['jpg', 'jpeg', 'png']
+        ext = os.path.splitext(attrs.name)[1][1:].lower()
+
+        if ext not in valid_extension:
+            raise serializers.ValidationError(
+                f"Unsupported file extension. Allowed extensions are: {', '.join(valid_extension)}"
+            )
+        max_size = 5*1024*1024  # 5MB
+
+        if attrs.size > max_size:
+            raise serializers.ValidationError("File size exceeds the maximum limit of 5MB.")
+
+        return attrs
+
+    def validate_Logo_team_name(self, attrs):
+        team_name = attrs.get("name")
+        team_logo = attrs.get("logo")
+
+        if team_name and team_logo:
+            requeired_name = team_name.strip().lower()
+
+            file_name_without_extension = os.pah.splitext(team_logo.name)[0].lower()
+
+            if requeired_name not in file_name_without_extension:
+                raise serializers.ValidationErrorserializers.ValidationError(
+                    {
+                        "logo": f"The uploaded file name must contain the team's name. "
+                        f"Expected to find '{requeired_name}' inside '{file_name_without_extension}'."
+                    }
+                )
+
+        return attrs

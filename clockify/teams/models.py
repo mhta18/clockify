@@ -1,8 +1,10 @@
+import uuid
+import os
 from django.db import models
 from django.utils.text import slugify
 from django.conf import settings
-import uuid
-from django.core.exceptions import ValidationError
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 
 # Create your models here.
 
@@ -27,4 +29,28 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+
+@receiver(post_delete, sender=Team)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+        if instance.logo:
+            if os.path.isfile(instance.logo.path):
+                os.remove(instance.logo.path)
+
+
+@receiver(models.signals.pre_save, sender=Team)
+def auto_delete_file_on_change(instance, **kwargs):
+    if not instance.pk:
+        return False
+
+    try:
+        old_logo = Team.objects.get(pk=instance.pk).logo
+    except Team.DoesNotExist:
+        return False
+
+    new_logo = instance.logo
+
+    if old_logo and old_logo != new_logo :
+        if os.path.isfile(old_logo.path):
+            os.remove(old_logo.path)
+ 

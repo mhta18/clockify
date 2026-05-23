@@ -15,3 +15,5 @@ class ProjectSerializer(serializers.ModelSerializer):
             "teams"
         ]
         read_only_fields =  ["uuid","slug","created_at"]
+
+    

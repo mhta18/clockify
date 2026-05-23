@@ -11,25 +11,41 @@ from drf_spectacular.utils import extend_schema_view,extend_schema
 
 # Create your views here.
 
-LOGO_SCHEMA = {
+TEAM_UPLOAD_SCHEMA = {
     "multipart/form-data": {
         "type": "object",
         "properties": {
+            "name": {"type": "string", "description": "The unique name of the team."},
+            "description": {
+                "type": "string",
+                "description": "A brief overview of the team's department or focus.",
+            },
             "logo": {
                 "type": "string",
                 "format": "binary",
+                "description": "The team's profile image or avatar file.",
             },
-            "name": {"type": "string"},
-            "description": {"type": "string"},
-        },
+            "supervisor": {
+                "type": "integer", 
+                "description": "The ID of the user assigned as the team's supervisor.",
+                "nullable": False,
+            },
+            "members": {
+                "type": "array",
+                "items": {
+                    "type": "integer",
+                },
+                "description": "A list of user UUIDs to add as members to this team.",
+            },
+        } 
     }
 }
 
 
 @extend_schema_view(
-    create=extend_schema(request=LOGO_SCHEMA),  # POST /teems/
-    update=extend_schema(request=LOGO_SCHEMA),  # PUT /teems/{id}/
-    partial_update=extend_schema(request=LOGO_SCHEMA),  # PATCH /teems/{id}/
+    create=extend_schema(request=TEAM_UPLOAD_SCHEMA),  # POST /teems/
+    update=extend_schema(request=TEAM_UPLOAD_SCHEMA),  # PUT /teems/{id}/
+    partial_update=extend_schema(request=TEAM_UPLOAD_SCHEMA),  # PATCH /teems/{id}/
 )
 class TeamViewSet(viewsets.ModelViewSet):
 
