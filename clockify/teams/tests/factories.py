@@ -11,7 +11,7 @@ class TeamFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("paragraph", nb_sentences=3)
 
     supervisor = factory.SubFactory(UserFactory, is_active=True)
-
+    logo = factory.django.ImageField(filename="alpha_team_logo.png")
     @factory.post_generation
     def members(self, create, extracted, **kwargs):
         # chack if they have saved in db
@@ -24,6 +24,5 @@ class TeamFactory(factory.django.DjangoModelFactory):
         if extracted:
             for member in extracted:
                 self.members.add(member)
-    
+
         self.save()
-        

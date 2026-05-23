@@ -49,13 +49,22 @@ class TeamSerializer(serializers.ModelSerializer):
         if "members" in internal_value:
             raw_members = internal_value.getlist("members")
 
-        if len(raw_members) == 1 and "," in raw_members[0]:
-            raw_members = raw_members[0].split(",")
 
-        try:
-            internal_value.setlist("members", [int(m) for m in raw_members if str(m).strip().isdigit()])
-        except (ValueError, TypeError):
-            pass
+            if (
+                len(raw_members) == 1
+                and isinstance(raw_members[0], str)
+                and "," in raw_members[0]
+            ):
+                raw_members = raw_members[0].split(",")
+
+            try:
+               
+                cleaned_members = [
+                    int(m) for m in raw_members if str(m).strip().isdigit()
+                ]
+                internal_value.setlist("members", cleaned_members)
+            except (ValueError, TypeError):
+                pass
 
         return super().to_internal_value(internal_value)
 
