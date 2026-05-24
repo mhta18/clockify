@@ -9,8 +9,8 @@ User = get_user_model()
 class Contract(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contracts")
     role_title = models.CharField(max_length=255)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

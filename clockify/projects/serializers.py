@@ -12,8 +12,9 @@ class ProjectSerializer(serializers.ModelSerializer):
             "slug",
             "created_at",
             "end_date",
-            "teams"
+            "teams",
+            "color"
         ]
-        read_only_fields =  ["uuid","slug","created_at"]
+        read_only_fields =  ["uuid","color","slug","created_at"]
 
     
