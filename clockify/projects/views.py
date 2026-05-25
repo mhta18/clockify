@@ -18,6 +18,7 @@ class ProjctViewSet(
     mixins.DestroyModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
+    viewsets.GenericViewSet
 ):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer

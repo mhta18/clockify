@@ -15,6 +15,11 @@ class ProjectSerializer(serializers.ModelSerializer):
             "teams",
             "color"
         ]
-        read_only_fields =  ["uuid","color","slug","created_at"]
+        read_only_fields =  ["uuid","slug","created_at"]
 
-    
+    def validate_color(self, value):
+        if value and not value.startswith("#"):
+            raise serializers.ValidationError(
+                "Color must be a valid hex code starting with '#'."
+            )
+        return value

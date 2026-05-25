@@ -102,3 +102,27 @@ class TeamTestSerializer(TestCase):
         serializer_2 = TeamSerializer(data =comma_input_data)
         serializer_2.is_valid()
         self.assertEqual(serializer_2.validated_data["members"],[member1,member2,member3])
+
+    # write data
+    def test_serialize_valid_team(self):
+        team = TeamFactory()
+        serializer = TeamSerializer(instance=team)
+
+        assert serializer.data['name'] == team.name
+        assert serializer.data['supervisor_details']['id'] == team.supervisor.id
+
+    #read data
+    def test_deserialize_valide_date(self):
+        user = UserFactory()
+        user1 = UserFactory()
+        TeamFactory(supervisor=user)
+
+        payload = MultiValueDict({
+            "name": ["devops"],
+            "description": ["description 1"],
+            "supervisor": [user.id],
+            "members": [user.id,user1.id],
+        })
+
+        serializer = TeamSerializer(data=payload)
+        assert serializer.is_valid() is True
