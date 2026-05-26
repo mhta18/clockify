@@ -17,6 +17,7 @@ def api_client():
     return client
 
 class TestEmployerContractView:
+     
     def test_list_freelancer_contracts_via_list_view(self,api_client):
         FreelancerContractFactory.create_batch(3)
 
@@ -49,7 +50,7 @@ class TestEmployerContractView:
 
         data = {
             "user": freelancer_contract.user.id,
-            "role_title": "Senior QA Lead",
+            "role_title": "Team Lead",
             "start_date": str(freelancer_contract.start_date),
             "end_date": str(freelancer_contract.end_date),
             "hourly_payment": "40.00",
