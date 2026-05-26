@@ -16,7 +16,7 @@ class ContractFactory(factory.django.DjangoModelFactory):
     end_date = factory.LazyFunction(lambda: date.today() + timedelta(days=20))
 
 
-class FreelancerFactory(ContractFactory):
+class FreelancerContractFactory(ContractFactory):
     class Meta:
         model = FreelancerContract
 
@@ -32,7 +32,7 @@ class FreelancerFactory(ContractFactory):
     document_file = None
 
 
-class EmployerFactory(ContractFactory):
+class EmployerContractFactory(ContractFactory):
     class Meta:
         model = EmployerContract
 
@@ -48,6 +48,7 @@ class EmployerFactory(ContractFactory):
     employment_type = factory.Faker(
         "random_element",
         elements=[
-            EmployerContract.EmploymentType.PART_TIME,EmployerContract.EmploymentType.FULL_TIME
+            EmployerContract.EmploymentType.PART_TIME,
+            EmployerContract.EmploymentType.FULL_TIME,
         ],
     )

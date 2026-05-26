@@ -1,26 +1,26 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    FreelancerListAPiView,
-    EmployerListAPIView,
-    FreelancerViewSet,
-    EmployerViewSet,
+    FreelancerContractListAPiView,
+    EmployerContractListAPIView,
+    FreelancerContractViewSet,
+    EmployerContractViewSet,
 )
 
 router = DefaultRouter()
 
-router.register(r"freelancers", FreelancerViewSet, basename="freelancer")
-router.register(r"employers", EmployerViewSet, basename="employer")
+router.register(r"freelancers", FreelancerContractViewSet, basename="freelancers")
+router.register(r"employers", EmployerContractViewSet, basename="employers")
 
 urlpatterns = [
     path(
         "freelancers/list/",
-        FreelancerListAPiView.as_view(),
+        FreelancerContractListAPiView.as_view(),
         name="freelancer-list",
     ),
     path(
         "employers/list/",
-        EmployerListAPIView.as_view(),
+        EmployerContractListAPIView.as_view(),
         name="employer-list",
     ),
     path("", include(router.urls)),

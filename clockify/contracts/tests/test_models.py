@@ -1,8 +1,9 @@
 import pytest
 from django.test import TestCase
 from users.tests.factories import UserFactory
-from .factories import FreelancerFactory, EmployerFactory
+from .factories import FreelancerContractFactory, EmployerContractFactory
 from django.db import IntegrityError
+
 
 @pytest.mark.django_db
 class ContractModelTest(TestCase):
@@ -13,11 +14,9 @@ class ContractModelTest(TestCase):
 
     def test_user_can_not_have_multiple_contract_with_different_roles(self):
 
-        FreelancerFactory(
-            user=self.user, role_title="Backend Developer"
-        )
+        FreelancerContractFactory(user=self.user, role_title="Backend Developer")
         with self.assertRaises(IntegrityError):
-            EmployerFactory(
+            EmployerContractFactory(
                 user=self.user,
-                role_title="Different Employer Position", 
+                role_title="Different Employer Position",
             )

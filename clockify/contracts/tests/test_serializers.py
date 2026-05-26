@@ -1,11 +1,15 @@
 import pytest
 from users.tests.factories import UserFactory
-from datetime import date,timedelta
-from contracts.serializers import FreelanserContractSerializer,EmployerContractSerializer
-from .factories import FreelancerFactory,EmployerFactory
+from datetime import date, timedelta
+from contracts.serializers import (
+    FreelanserContractSerializer,
+    EmployerContractSerializer,
+)
+from .factories import FreelancerContractFactory, EmployerContractFactory
 from contracts.models import EmployerContract
 
 pytestmark = pytest.mark.django_db
+
 
 class TestFreelancerSerializer:
     def test_valid_Freelancer_serializer(self):
@@ -21,12 +25,12 @@ class TestFreelancerSerializer:
 
         serialazer = FreelanserContractSerializer(data=data)
 
-        assert serialazer.is_valid(),serialazer.errors
+        assert serialazer.is_valid(), serialazer.errors
         assert serialazer.validated_data["role_title"] == "React Developer"
         assert serialazer.validated_data["user"] == user
 
     def test_duplicate_user_contract_fails_validation_Freelancer(self):
-        existing_contract = FreelancerFactory()
+        existing_contract = FreelancerContractFactory()
         existing_user = existing_contract.user
 
         duplicate_data = {
@@ -43,6 +47,8 @@ class TestFreelancerSerializer:
         assert not serializer.is_valid()
         assert "user" in serializer.errors
 
+
+class TestFreelancerSerializer:
     def test_valid_Employer_serializer(self):
         user = UserFactory()
         data = {
@@ -56,12 +62,12 @@ class TestFreelancerSerializer:
 
         serialazer = EmployerContractSerializer(data=data)
 
-        assert serialazer.is_valid(),serialazer.errors
+        assert serialazer.is_valid(), serialazer.errors
         assert serialazer.validated_data["role_title"] == "React Developer"
         assert serialazer.validated_data["user"] == user
 
     def test_duplicate_user_contract_fails_validation_Employer(self):
-        existing_contract = EmployerFactory()
+        existing_contract = EmployerContractFactory()
         existing_user = existing_contract.user
 
         duplicate_data = {
