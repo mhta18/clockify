@@ -7,7 +7,8 @@ from projects.serializers import ProjectSerializer
 from projects.models import Project
 from django.utils.text import slugify
 
-class ProjectSerializerTest(TestCase):
+
+class ProjectModelTest(TestCase):
 
     @pytest.mark.django_db
     def setUp(self):
@@ -43,4 +44,4 @@ class ProjectSerializerTest(TestCase):
         serializer = ProjectSerializer(data=data)
         self.assertTrue(serializer.is_valid())
         project = serializer.save()
-        self.assertEqual(project.slug,slugify("clockify"))
+        self.assertEqual(project.slug, slugify("clockify"))

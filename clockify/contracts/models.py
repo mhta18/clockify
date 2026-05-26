@@ -1,21 +1,18 @@
 from django.db import models
 from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
+from users.models import User
 
 
 class Contract(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contracts")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="contract")
     role_title = models.CharField(max_length=255)
     start_date = models.DateField(null=False)
     end_date = models.DateField(null=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
     def __str__(self):
         return f"{self.role_title} - {self.user.email}"
-
 
 
 class FreelancerContract(Contract):

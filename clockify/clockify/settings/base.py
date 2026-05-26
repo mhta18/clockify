@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "users",
     "teams",
     "projects",
+    "contracts",
     "authentication",
     "corsheaders",
     "rest_framework",

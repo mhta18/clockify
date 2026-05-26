@@ -1,10 +1,25 @@
 from rest_framework import serializers
-from .models import EmployerContract,FreelancerContract
+from .models import Contract, EmployerContract, FreelancerContract
+from users.models import User
+from rest_framework.validators import UniqueValidator
+
 
 class BaseContract(serializers.ModelSerializer):
+
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        validators=[
+            UniqueValidator(
+                queryset=Contract.objects.all(),
+                message="A contract already exists for this user.",
+            )
+        ],
+    )
+
     class Meta:
-        model = EmployerContract
+        model = Contract
         fields = [
+            "user",
             "role_title",
             "start_date",
             "end_date",
@@ -15,20 +30,21 @@ class BaseContract(serializers.ModelSerializer):
 
 class EmployerContractSerializer(BaseContract):
     class Meta:
-        model = EmployerContract
-        fields = [
+        model = EmployerContract 
+        fields = BaseContract.Meta.fields + [
             "role_title",
             "start_date",
             "end_date",
             "created_at",
             "monthly_payment",
-            "employment_type"
+            "employment_type",
         ]
+
 
 class FreelanserContractSerializer(BaseContract):
     class Meta:
         model = FreelancerContract
-        fields = [
+        fields = BaseContract.Meta.fields + [
             "role_title",
             "start_date",
             "end_date",
