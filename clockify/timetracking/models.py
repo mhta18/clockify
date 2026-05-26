@@ -39,3 +39,10 @@ class TimeLog(models.Model):
             raise ValidationError("You must belong to a team to track time.")
         if not hasattr(self.user, "contract"):
             raise ValidationError("You must have an active contract to track time.")
+
+    def save(self, *file, **kwargs):
+        self.full_clean()
+        super().save(*file, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.name} - {self.project.name} - {self.duration}"
