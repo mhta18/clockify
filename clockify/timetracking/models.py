@@ -45,4 +45,4 @@ class TimeLog(models.Model):
         super().save(*file, **kwargs)
 
     def __str__(self):
-        return f"{self.user.name} - {self.project.name} - {self.duration}"
+        return f"{self.user.first_name} - {self.project.name} - {self.duration}"

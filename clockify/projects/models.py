@@ -11,7 +11,7 @@ hex_color_validator = RegexValidator(
 )
 class Project(models.Model):
     name = models.CharField(max_length=100,unique=True)
-    uuid = models.UUIDField(default=uuid.uuid4,editable=False,unique=True,primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)    
     slug = models.SlugField(max_length=255,unique=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True )
     end_date = models.DateTimeField(null=True,blank=True)

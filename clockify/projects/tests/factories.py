@@ -1,3 +1,4 @@
+import uuid
 import factory
 from projects.models import Project
 from teams.tests.factories import (
@@ -10,8 +11,8 @@ class ProjectFactory(factory.django.DjangoModelFactory):
         model = Project
         skip_postgeneration_save = True
 
+    id = factory.LazyFunction(uuid.uuid4)
     name = factory.Faker("catch_phrase")
-
     color = "#D1D5DB"
 
     @factory.post_generation
