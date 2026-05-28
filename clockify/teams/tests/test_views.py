@@ -5,6 +5,8 @@ from teams.tests.factories import TeamFactory
 from rest_framework import status
 from django.urls import reverse
 from freezegun import freeze_time
+from datetime import timedelta
+from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
@@ -14,7 +16,7 @@ class TestTeamViewSet:
     @pytest.fixture(autouse=True)
     def setup_method(self):
         self.client = APIClient()
-        self.user = UserFactory()
+        self.user = UserFactory(is_admin=True)
 
         self.client.force_authenticate(user=self.user)
 
@@ -28,10 +30,10 @@ class TestTeamViewSet:
 
     def test_list_team_include_member_count(self):
 
-        team = TeamFactory()
+        team = TeamFactory(supervisor=self.user, members=[self.user])
 
         response = self.client.get(self.list_url)
-
+        print("--- API ERROR RESPONSE ---", response.data)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1 
 
@@ -124,3 +126,36 @@ class TestTeamViewSet:
 
         assert response.status_code == 200
         assert response.data[0]["name"]== "Team 1"
+
+
+@pytest.mark.django_db
+class TestTaskViewSet:
+
+    @pytest.fixture(autouse=True)
+    def setup_method(self):
+        self.client = APIClient()
+        self.user = UserFactory()
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_supevisor_cannot_create_task_for_foreign_team(self):
+
+        other_supervisor= UserFactory()
+        worker_B = UserFactory()
+        team_B = TeamFactory(members=[worker_B], supervisor=other_supervisor)
+
+        url=reverse("tasks-list")
+
+        payload = {
+            "title": "Cross-team Task Injection",
+            "team": team_B.id, 
+            "assigned_to": worker_B.id,
+            "created_by":self.user.id,
+            "deadline": (timezone.now() + timedelta(days=1)).isoformat(),
+            "priority": "MEDIUM",
+        }
+
+        response = self.client.post(url,payload, format='json')
+        error_message = str(response.data["team"][0]).lower()
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "not its assigned supervisor" in error_message
