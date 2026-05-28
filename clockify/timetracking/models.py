@@ -3,7 +3,9 @@ from users.models import User
 from projects.models import Project
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
+from datetime import timedelta
+from decimal import Decimal
+from contracts.models import FreelancerContract, EmployerContract
 # Create your models here.
 
 
@@ -19,13 +21,16 @@ class TimeLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    payment = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
     class Meta:
         ordering = ["-start_time"]
 
     @property
     def duration(self):
         if not self.end_time:
-            return timezone.now() - self.start_time
+            return timedelta(0)
         return self.end_time - self.start_time
 
     def clean(self):
@@ -41,6 +46,25 @@ class TimeLog(models.Model):
             raise ValidationError("You must have an active contract to track time.")
 
     def save(self, *file, **kwargs):
+
+        if self.end_time and self.duration.total_seconds() > 0:
+            freelancer_contract = FreelancerContract.objects.filter(user=self.user).first()
+
+            if freelancer_contract:
+                hourly_payment = Decimal(str(freelancer_contract.hourly_payment))
+
+                duration_in_hours = Decimal(self.duration.total_seconds())/Decimal("3600.00")
+                self.payment = round(duration_in_hours * hourly_payment, 2)
+
+            else:
+                is_employer = EmployerContract.objects.filter(user = self.user).exists()
+
+                if is_employer:
+                    self.payment = Decimal("0.00")
+                else:
+                    self.payment = Decimal('0.00')
+        else:
+            self.payment = Decimal("0.00")
         self.full_clean()
         super().save(*file, **kwargs)
 

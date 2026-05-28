@@ -6,9 +6,11 @@ from projects.tests.factories import ProjectFactory
 from django.urls import reverse
 from rest_framework import status
 from timetracking.tests.factories import TimeLogFactory
+from decimal import Decimal
 from teams.tests.factories import TeamFactory
 from contracts.tests.factories import FreelancerContractFactory
 from timetracking.models import TimeLog
+from datetime import timedelta
 pytestmark = pytest.mark.django_db
 
 @pytest.fixture
@@ -43,11 +45,14 @@ class TestTimeLogViewSet:
         FreelancerContractFactory(user=user)
         team = TeamFactory(members=[user.id])
         project = ProjectFactory(teams=[team.id])
+        two_hours_ago = timezone.now() - timedelta(hours=2)
+        one_hour_ago = timezone.now() - timedelta(hours=1)
         past_log = TimeLogFactory(
             user=user,
             project=project,
             description="Legacy code branch",
-            end_time=timezone.now(),
+            start_time =two_hours_ago,
+            end_time=one_hour_ago,
         )
 
         url = reverse(
@@ -57,8 +62,7 @@ class TestTimeLogViewSet:
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["description"] == "Legacy code branch"
-        assert response.data["id"] != past_log.id  # Must be a brand new instance ID
-        assert response.data["is_running"] is True
+        assert response.data["id"] != past_log.id 
 
     def test_delete_timlog_record(self,api_client):
         client, user = api_client
@@ -69,3 +73,15 @@ class TestTimeLogViewSet:
         response = client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not TimeLog.objects.filter(id=log.id).exists()
+
+    def test_active_timelog_displays_zero_payment(self, api_client):
+        client, user = api_client
+        FreelancerContractFactory(user=user, hourly_payment=Decimal("45.00"))
+
+        log = TimeLogFactory(user=user, end_time=None)
+
+        url = reverse("timelog-detail", kwargs={"pk": log.pk})
+        response = client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert Decimal(response.data["payment"]) == Decimal("0.00")

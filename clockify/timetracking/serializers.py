@@ -6,7 +6,6 @@ from projects.models import Project
 
 class TimeLogSerializer(serializers.ModelSerializer):
     duration_seconds = serializers.SerializerMethodField()
-    is_running = serializers.SerializerMethodField()
 
     class Meta:
         model = TimeLog
@@ -17,16 +16,15 @@ class TimeLogSerializer(serializers.ModelSerializer):
             "description",
             "start_time",
             "end_time",
-            "duration_seconds",
-            "is_running",
+            "duration_seconds",     
+            "payment",       
         ]
-        read_only_fields = ["user" , "duration_seconds" , "is_running"]
+        read_only_fields = ["user" , "duration_seconds"]
 
     def get_duration_seconds(self,obj):
+        if obj.duration is None:
+            return 0
         return int(obj.duration.total_seconds())
-
-    def get_is_running(self,obj):
-        return obj.end_time is None
 
     def validate_single_active_timer(self, user):
         active_timer_exists = TimeLog.objects.filter(

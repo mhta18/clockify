@@ -2,12 +2,9 @@ import pytest
 from django.utils import timezone
 from datetime import timedelta
 from .factories import TimeLogFactory
-from rest_framework.test import APIClient
+from contracts.tests.factories import FreelancerContractFactory
+from decimal import Decimal
 from users.tests.factories import UserFactory
-from teams.tests.factories import TeamFactory
-from projects.tests.factories import ProjectFactory
-from contracts.tests.factories import EmployerContract
-
 pytestmark = pytest.mark.django_db
 
 
@@ -24,6 +21,16 @@ class TestTimeTracking:
         start = timezone.now() - timedelta(minutes=45)
         log = TimeLogFactory(start_time=start, end_time=None)
 
-        assert abs(log.duration.total_seconds() - 2700) < 2
+        assert log.duration.total_seconds() == 0
 
+    def test_payment_calculated_from_contract_on_stop(self):
+
+        user = UserFactory()
+        FreelancerContractFactory(user= user,hourly_payment= Decimal("50.00"))
+
+        start = timezone.now() - timedelta(hours=2)
+        end = timezone.now()
+
+        log = TimeLogFactory(user=user,start_time=start,end_time=end)
+        assert log.payment == Decimal("100.00")
 

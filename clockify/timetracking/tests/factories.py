@@ -6,7 +6,7 @@ from users.tests.factories import UserFactory
 from projects.tests.factories import ProjectFactory
 from teams.tests.factories import TeamFactory
 from contracts.tests.factories import EmployerContractFactory,FreelancerContractFactory
-
+from datetime import timedelta
 
 class TimeLogFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -24,7 +24,7 @@ class TimeLogFactory(factory.django.DjangoModelFactory):
     start_time = factory.LazyFunction(timezone.now)
     end_time = None
     description = "Coding task"
-
+    
     @factory.lazy_attribute
     def project(self):
         team = TeamFactory(members=[self.user.id])

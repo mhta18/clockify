@@ -7,7 +7,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            "uuid",
+            "id",
             "name",
             "slug",
             "created_at",
@@ -15,7 +15,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "teams",
             "color"
         ]
-        read_only_fields =  ["uuid","slug","created_at"]
+        read_only_fields =  ["id","slug","created_at"]
 
     def validate_color(self, value):
         if value and not value.startswith("#"):

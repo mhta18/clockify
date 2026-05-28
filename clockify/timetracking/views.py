@@ -44,15 +44,15 @@ class TimeLogViewSet(viewsets.ModelViewSet):
         # consider that there is an ID
         past_log = self.get_object()
 
-        serializer = self.get_serializer(
+        cloned_log = self.get_serializer(
             data={
                 "project": past_log.project.id,
                 "description": past_log.description,
                 "start_time": timezone.now(),
             }
         )
+        
+        cloned_log.is_valid(raise_exception=True)
+        cloned_log.save(user=request.user)
 
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(cloned_log.data, status=status.HTTP_201_CREATED)
