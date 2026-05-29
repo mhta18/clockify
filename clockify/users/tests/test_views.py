@@ -19,7 +19,7 @@ class TestUserViewSet:
 
         self.client.force_authenticate(user=admin_user)
 
-        response = self.client.get("/api/list/")
+        response = self.client.get("/api/users/list/")
 
         assert response.status_code == 200
 
@@ -33,7 +33,7 @@ class TestUserViewSet:
 
         self.client.force_authenticate(user=user)
 
-        response = self.client.get("/api/list/")
+        response = self.client.get("/api/users/list/")
 
         assert response.status_code == 403
 
@@ -59,7 +59,7 @@ class TestUserViewSet:
 
         assert response.data["email"] == "test@gmail.com"
 
-    def test_non_admin_can_create_user(self):
+    def test_non_admin_cannot_create_user(self):
 
         self.client = APIClient()
 
@@ -78,6 +78,7 @@ class TestUserViewSet:
         )
 
         assert response.status_code == 403
+
 
     def test_admin_can_update_user(self):
 
@@ -118,11 +119,10 @@ class TestUserViewSet:
         admin = UserFactory(is_admin=True, gender="male")
         self.client.force_authenticate(user=admin)
 
-        # Use lowercase "female" to match your model's database choices
         UserFactory(gender="female")
         UserFactory(gender="male")
 
-        response = self.client.get("/api/list/?gender=female")
+        response = self.client.get("/api/users/list/?gender=female")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -134,7 +134,7 @@ class TestUserViewSet:
         UserFactory(country="lebanon")
         UserFactory(country="canada")
 
-        response = self.client.get("/api/list/?country=lebanon")
+        response = self.client.get("/api/users/list/?country=lebanon")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -148,7 +148,9 @@ class TestUserViewSet:
 
         UserFactory(email="user3@gmail.com")
 
-        response = self.client.get("/api/list/", {"created_at": "2026-05-16 12:00:00"})
+        response = self.client.get(
+            "/api/users/list/", {"created_at": "2026-05-16 12:00:00"}
+        )
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -163,7 +165,7 @@ class TestUserViewSet:
         UserFactory(country="lebanon")
         UserFactory(country="canada")
 
-        response = self.client.get("/api/list/?ordering=country")
+        response = self.client.get("/api/users/list/?ordering=country")
 
         assert response.status_code == 200
         assert response.data[0]["country"] == "canada"
@@ -176,7 +178,7 @@ class TestUserViewSet:
         UserFactory(first_name="Lion")
         UserFactory(first_name="Tiger")
 
-        response = self.client.get("/api/list/?ordering=first_name")
+        response = self.client.get("/api/users/list/?ordering=first_name")
 
         assert response.status_code == 200
         assert response.data[0]["first_name"] == "Aria"
@@ -189,7 +191,7 @@ class TestUserViewSet:
         UserFactory(last_name="Lion")
         UserFactory(last_name="Tiger")
 
-        response = self.client.get("/api/list/?ordering=last_name")
+        response = self.client.get("/api/users/list/?ordering=last_name")
 
         assert response.status_code == 200
         assert response.data[0]["last_name"] == "Barton"
@@ -206,7 +208,7 @@ class TestUserViewSet:
         with freeze_time("2026-05-16 12:00:00"):
             new_user = UserFactory(email="user2@gmail.com")
 
-        response = self.client.get("/api/list/", {"ordering": "created_at"})
+        response = self.client.get("/api/users/list/", {"ordering": "created_at"})
 
         assert response.status_code == 200
         assert response.data[0]["email"] == admin.email
@@ -221,7 +223,7 @@ class TestUserViewSet:
 
         target_user = UserFactory(email="mahta.m.1183@gmail.com")
         UserFactory(email="user@gmail.com")
-        response = self.client.get(f"/api/list/?search={target_user.email}")
+        response = self.client.get(f"/api/users/list/?search={target_user.email}")
         assert response.status_code == 200
         assert len(response.data) == 1
         assert response.data[0]["email"] == target_user.email
@@ -233,7 +235,7 @@ class TestUserViewSet:
 
         target_user = UserFactory(first_name="mahta")
         UserFactory(first_name="another")
-        response = self.client.get(f"/api/list/?search={target_user.first_name}")
+        response = self.client.get(f"/api/users/list/?search={target_user.first_name}")
         assert response.status_code == 200
         assert len(response.data) == 1
         assert response.data[0]["first_name"] == target_user.first_name

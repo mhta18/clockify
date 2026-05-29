@@ -48,7 +48,7 @@ class EmployerContractFactory(ContractFactory):
     employment_type = factory.Faker(
         "random_element",
         elements=[
-            EmployerContract.EmploymentType.PART_TIME,
-            EmployerContract.EmploymentType.FULL_TIME,
+            EmployerContract.EmploymentHours.FIVE_HOURS,
+            EmployerContract.EmploymentHours.EIGHT_HOURS,
         ],
     )

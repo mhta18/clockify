@@ -91,7 +91,7 @@ class TestEmployerContractView:
             "start_date": str(date.today()),
             "end_date": str(date.today() + timedelta(days=90)),
             "monthly_payment": "450",
-            "employment_type": EmployerContract.EmploymentType.PART_TIME,
+            "employment_type": EmployerContract.EmploymentHours.FOUR_HOURS,
         }
 
         response = api_client.post(url, data=data, format="json")
@@ -108,7 +108,7 @@ class TestEmployerContractView:
             "start_date": str(date.today()),
             "end_date": str(date.today() + timedelta(days=90)),
             "monthly_payment": "450",
-            "employment_type": EmployerContract.EmploymentType.PART_TIME,
+            "employment_type": EmployerContract.EmploymentHours.FIVE_HOURS,
         }
         response = api_client.put(url, data=data, format="json")
         assert response.status_code == status.HTTP_200_OK

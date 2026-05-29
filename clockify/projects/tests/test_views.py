@@ -23,7 +23,7 @@ class ProjetcViewTest(APITestCase):
         )
 
         self.list_create_url = reverse("project-list")
-        self.detail_url = reverse("projects-detail", kwargs={"pk": self.project.uuid})
+        self.detail_url = reverse("projects-detail", kwargs={"pk": self.project.id})
 
     def test_list_projects_returns_success(self):
         self.client.force_authenticate(user=self.user)
@@ -73,7 +73,7 @@ class ProjetcViewTest(APITestCase):
             self.detail_url, data=payload, format="json"
         )
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Project.objects.filter(uuid=self.project.uuid).exists())
+        self.assertFalse(Project.objects.filter(id=self.project.id).exists())
 
     def test_batch_generation_speed_tip(self):
 

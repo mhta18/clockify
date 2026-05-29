@@ -57,7 +57,7 @@ class TestFreelancerSerializer:
             "start_date": str(date.today()),
             "end_date": str(date.today() + timedelta(days=90)),
             "monthly_payment": "450",
-            "employment_type": EmployerContract.EmploymentType.PART_TIME,
+            "employment_type": EmployerContract.EmploymentHours.SEVEN_HOURS,
         }
 
         serialazer = EmployerContractSerializer(data=data)
@@ -76,7 +76,7 @@ class TestFreelancerSerializer:
             "start_date": str(date.today()),
             "end_date": str(date.today() + timedelta(days=90)),
             "monthly_payment": "450",
-            "employment_type": EmployerContract.EmploymentType.FULL_TIME,
+            "employment_type": EmployerContract.EmploymentHours.SIX_HOURS,
         }
 
         serializer = EmployerContractSerializer(data=duplicate_data)

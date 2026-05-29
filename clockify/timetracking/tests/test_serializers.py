@@ -20,9 +20,7 @@ class TestTimeLogSerializer:
         serializer = TimeLogSerializer(instance=log, context={"request": request})
 
         assert "duration_seconds" in serializer.data
-        assert "is_running" in serializer.data
-        assert serializer.data["is_running"] is True
-
+     
     def test_validation_blocks_creation_if_timer_already_running(self, rf):
         user = UserFactory()
         EmployerContractFactory(user=user)

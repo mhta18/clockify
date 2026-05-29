@@ -27,6 +27,19 @@ class UserSerializer(serializers.ModelSerializer):
 
         read_only_fields = ("created_at", "updated_at")
 
+    def validate_gender(self, value):
+       
+        normalized_value = value.lower().strip()
+
+        valid_genders = [choice[0] for choice in User.GENDER_CHOICES]
+
+        if normalized_value not in valid_genders:
+            raise serializers.ValidationError(
+                f"Invalid gender choice. Must be one of: {', '.join(valid_genders)}."
+            )
+
+        return normalized_value
+
     def validate_avatar_size(self, attrs):
 
         # Validate file extension and size

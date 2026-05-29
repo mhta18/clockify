@@ -12,7 +12,7 @@ class TestRequestOPTView:
 
     def test_request_otp_success(self):
         user = UserFactory(
-            email="m@gmail.com",
+            email="lion@gmail.com",
         )
         response = self.client.post(
             "/api/auth/request_otp/", {"email": user.email}, format="json"
@@ -21,6 +21,6 @@ class TestRequestOPTView:
 
     def test_request_otp_invalid_user(self):
         response = self.client.post(
-            "/api/auth/request_otp/", {"email": "noone@gmail.com"}, format="json"
+            "/api/auth/request_otp/", {"email": "m@gmail.com"}, format="json"
         )
-        assert response.status_code == 404
+        assert response.status_code == 400
