@@ -63,8 +63,6 @@ LOGGING = {
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r+q#t@%xhy1c$1m#gk(z9z#(+cgp^e(+gg-0!d1+c^l_xwj7h1'
 
 
 AUTH_USER_MODEL = 'users.User'

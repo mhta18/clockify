@@ -3,7 +3,6 @@ from rest_framework import serializers
 from teams.models import Team, Task
 from users.serializers import UserSerializer
 
-
 class TeamSerializer(serializers.ModelSerializer):
     supervisor_details = UserSerializer(source="supervisor", read_only=True)
     members_details = UserSerializer(source="members", many=True, read_only=True)
@@ -109,13 +108,14 @@ class TeamSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
 
     created_by = serializers.ReadOnlyField(source="created_by.email")
-
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
     class Meta:
         model = Task
         fields = [
             "id",
             "title",
             "description",
+            "status_display",
             "team",
             "created_by",
             "assigned_to",

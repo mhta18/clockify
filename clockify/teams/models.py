@@ -44,6 +44,12 @@ class Task(models.Model):
         MEDIUM = "MEDIUM", "Medium"
         LOW = "LOW", "Low"
 
+    class Status(models.TextChoices):
+        TODO = "TODO", "To Do"
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        REVIEW = "REVIEW", "Under Review"
+        DONE = "DONE", "Done"
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="tasks")
@@ -56,6 +62,12 @@ class Task(models.Model):
     )
 
     deadline = models.DateTimeField()
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.TODO,
+        help_text="The current operational lifecycle state of the task.",
+    )
     priority = models.CharField(
         max_length=10, choices=Priority.choices, default=Priority.MEDIUM
     )

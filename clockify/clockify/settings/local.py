@@ -2,27 +2,25 @@ from .base import *
 
 DEBUG = True
 
+SECRET_KEY = "django-insecure-local-development-key-leave-this-here"
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
 ]
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'clockify',
-        'HOST': 'localhost',
-        'PORT': '1433',
-
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
-    },
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "clockify",
+        "USER": "postgres",
+        "PASSWORD": "m.mira1183",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+    }
 }
 
-EMAIL_BACKEND = (
-    "django.core.mail.backends.console.EmailBackend"
-)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-MEDIA_URL = "/media/" # access the uploaded file
-MEDIA_ROOT = BASE_DIR / "media" # store the file
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

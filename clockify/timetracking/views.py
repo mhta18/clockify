@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from .serializers import TimeLogSerializer
-from users.permissions import IsAdminUser
+from authentication.permissons import IsUserAuthenticated
 from .models import TimeLog
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,13 +12,13 @@ from django.utils import timezone
 
 class TimeLogViewSet(viewsets.ModelViewSet):
     serializer_class = TimeLogSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsUserAuthenticated]
 
     def get_queryset(self):
         return TimeLog.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        # validate that no running time exist
+        #validate that no running time exist
         serializer.save(user=self.request.user)
 
     @action(detail=False, methods=["post"])

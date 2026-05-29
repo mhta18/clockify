@@ -29,6 +29,9 @@ class BaseContract(serializers.ModelSerializer):
 
 
 class EmployerContractSerializer(BaseContract):
+    employment_type_display = serializers.CharField(
+        source="get_employment_type_display", read_only=True
+    )
     class Meta:
         model = EmployerContract 
         fields = BaseContract.Meta.fields + [
@@ -38,6 +41,7 @@ class EmployerContractSerializer(BaseContract):
             "created_at",
             "monthly_payment",
             "employment_type",
+            "employment_type_display",
         ]
 
 

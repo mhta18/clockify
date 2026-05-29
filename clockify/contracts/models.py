@@ -1,7 +1,7 @@
 from django.db import models
 from django.db import models
 from users.models import User
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Contract(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="contract")
@@ -24,9 +24,17 @@ class FreelancerContract(Contract):
 
 
 class EmployerContract(Contract):
-    class EmploymentType(models.TextChoices):
-        PART_TIME = "PART_TIME", "Part-time"
-        FULL_TIME = "FULL_TIME", "Full-time"
+    class EmploymentHours(models.IntegerChoices):
+        FOUR_HOURS = 4, "Part-time (4 Hours)"
+        FIVE_HOURS = 5, "Part-time (5 Hours)"
+        SIX_HOURS = 6, "Part-time (6 Hours)"
+        SEVEN_HOURS = 7, "Part-time (7 Hours)"
+        EIGHT_HOURS = 8, "Full-time (8 Hours)"
 
     monthly_payment = models.DecimalField(max_digits=10, decimal_places=2)
-    employment_type = models.CharField(max_length=20, choices=EmploymentType.choices)
+    employment_type = models.IntegerField(
+        choices=EmploymentHours.choices,
+        default=EmploymentHours.EIGHT_HOURS,
+        validators=[MinValueValidator(4), MaxValueValidator(8)],
+        help_text="Designated daily contractual obligation commitment hours.",
+    )
