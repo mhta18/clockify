@@ -137,13 +137,15 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return (
-            Task.objects.filter(
-                models.Q(team__supervisor=user) | models.Q(assigned_to=user)
+
+        if "supervisor" in self.request.path:
+            return (
+                Task.objects.filter(team__supervisor=user)
+                .distinct()
+                .order_by("deadline")
             )
-            .distinct()
-            .order_by("deadline")
-        )
+
+        return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

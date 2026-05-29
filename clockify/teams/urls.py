@@ -4,8 +4,8 @@ from .views import TeamViewSet,TaskViewSet
 
 router =DefaultRouter()
 router.register(r'teams', TeamViewSet, basename='teams')
-router.register(r'tasks', TaskViewSet, basename='tasks')
-
+router.register(r"my-tasks", TaskViewSet, basename="my-task")
+router.register(r"supervisor/tasks", TaskViewSet, basename="supervisor-task")
 urlpatterns = [
     path('', include(router.urls)),
 ]
