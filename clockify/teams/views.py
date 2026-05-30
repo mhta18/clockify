@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from .models import Team, Task
 from .serializers import TeamSerializer, TaskSerializer
 from users.permissions import IsAdminUser
@@ -127,6 +127,21 @@ class TeamViewSet(viewsets.ModelViewSet):
         request=TASK_SCHEMA,
     ),
 )
+
+class TaskListAPIView(generics.ListAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsObjectWorkerOrSupervisor]
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["status"]
+
+    def get_queryset(self):
+       
+        user = self.request.user
+        return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
+
+
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer

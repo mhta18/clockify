@@ -144,7 +144,7 @@ class TestTaskViewSet:
         worker_B = UserFactory()
         team_B = TeamFactory(members=[worker_B], supervisor=other_supervisor)
 
-        url=reverse("tasks-list")
+        url = reverse("supervisor-task-list")
 
         payload = {
             "title": "Cross-team Task Injection",

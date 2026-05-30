@@ -1,11 +1,16 @@
 from django.urls import path,include
 from rest_framework .routers import DefaultRouter   
-from .views import TeamViewSet,TaskViewSet
+from .views import TeamViewSet,TaskViewSet,TaskListAPIView
 
 router =DefaultRouter()
 router.register(r'teams', TeamViewSet, basename='teams')
-router.register(r"my-tasks", TaskViewSet, basename="my-task")
-router.register(r"supervisor/tasks", TaskViewSet, basename="supervisor-task")
+router.register(r"supervisor/tasks", TaskViewSet  , basename="supervisor-task")
+BASE_NAME = "my-tasks"
 urlpatterns = [
-    path('', include(router.urls)),
+    path(
+        f"{BASE_NAME}/list/",
+        TaskListAPIView.as_view(),
+        name="my-task-list",
+    ),
+    path("", include(router.urls)),
 ]
