@@ -7,6 +7,7 @@ from projects.tests.factories import ProjectFactory
 from teams.tests.factories import TeamFactory
 from contracts.tests.factories import EmployerContractFactory,FreelancerContractFactory
 from datetime import timedelta
+from decimal import Decimal
 
 class TimeLogFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -24,7 +25,7 @@ class TimeLogFactory(factory.django.DjangoModelFactory):
     start_time = factory.LazyFunction(timezone.now)
     end_time = None
     description = "Coding task"
-    
+    payment = Decimal("0.00")
     @factory.lazy_attribute
     def project(self):
         team = TeamFactory(members=[self.user.id])

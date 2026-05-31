@@ -48,21 +48,35 @@ class TimeLog(models.Model):
     def save(self, *file, **kwargs):
 
         if self.end_time and self.duration.total_seconds() > 0:
-            freelancer_contract = FreelancerContract.objects.filter(user=self.user).first()
+            duration_in_hours = Decimal(self.duration.total_seconds()) / Decimal(
+                "3600.00"
+            )
+            if hasattr(self.user, 'contract'):
+                base_contract = self.user.contract
 
-            if freelancer_contract:
-                hourly_payment = Decimal(str(freelancer_contract.hourly_payment))
+                
 
-                duration_in_hours = Decimal(self.duration.total_seconds())/Decimal("3600.00")
-                self.payment = round(duration_in_hours * hourly_payment, 2)
+                if hasattr(base_contract, 'freelancercontract'):
+                    freelancer_contract = FreelancerContract.objects.filter(user=self.user).first()
 
-            else:
-                is_employer = EmployerContract.objects.filter(user = self.user).exists()
+                    hourly_payment = Decimal(str(freelancer_contract.hourly_payment))
 
-                if is_employer:
-                    self.payment = Decimal("0.00")
+                    duration_in_hours = Decimal(self.duration.total_seconds())/Decimal("3600.00")
+                    self.payment = round(duration_in_hours * hourly_payment, 2)
+
+                elif hasattr(base_contract, 'employercontract'):
+                    employer_contract = EmployerContract.objects.filter(user = self.user).first()
+                    worked_days_in_month = Decimal("22.00")
+                    mountly_pay= Decimal(employer_contract.monthly_payment)
+                    daily_hours= Decimal(employer_contract.employment_type)
+
+                    implied_hourly_rate = mountly_pay / (worked_days_in_month * daily_hours)
+
+                    self.payment = round(duration_in_hours * implied_hourly_rate,2)
                 else:
-                    self.payment = Decimal('0.00')
+                    self.payment = Decimal("0.00")
+            else:
+                self.payment = Decimal("0.00")
         else:
             self.payment = Decimal("0.00")
         self.full_clean()

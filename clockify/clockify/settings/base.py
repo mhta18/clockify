@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "contracts",
     "authentication",
     "timetracking",
+    "reports",
     "corsheaders",
     "rest_framework",
     "drf_spectacular",
