@@ -6,7 +6,6 @@ from users.tests.factories import UserFactory
 from projects.tests.factories import ProjectFactory
 from teams.tests.factories import TeamFactory
 from contracts.tests.factories import EmployerContractFactory,FreelancerContractFactory
-from datetime import timedelta
 from decimal import Decimal
 
 class TimeLogFactory(factory.django.DjangoModelFactory):
