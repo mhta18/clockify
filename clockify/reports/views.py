@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from drf_spectacular.utils import extend_schema
 from users.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import viewsets, status
@@ -9,14 +10,22 @@ from users.models import User
 from decimal import Decimal
 from contracts.models import FreelancerContract, EmployerContract
 from timetracking.models import TimeLog
+from .serializers import PlatformReportSerializer
 
 
 # Create your views here.
-
+@extend_schema(
+    summary="Retrieve administrative platform summary report",
+    description="Aggregates platform-wide hours tracked, user demographics, age parameters, and budget distributions.",
+    responses={
+        200: PlatformReportSerializer
+    },  # 🟢 This generates full interactive UI schemas natively!
+)
 
 class ReportsViewSet(viewsets.ViewSet):
 
     permission_classes = [IsAdminUser]
+    serializer_class = [PlatformReportSerializer]
 
     @action(detail=False, methods={"get"}, url_path="user-reports")
     def get_repots(self, request):
@@ -72,6 +81,7 @@ class ReportsViewSet(viewsets.ViewSet):
 
         emp_total_hours = round(Decimal(employer_stats["total_time"].total_seconds() if employer_stats["total_time"] else 0) / Decimal("3600.00"), 2)
 
+
         dashboard_payload = {
             "platform_wide_totals": {
                 "total_completed_hours": global_hours,
@@ -99,4 +109,7 @@ class ReportsViewSet(viewsets.ViewSet):
                 "women_count": employer_stats["women_count"],
             },
         }
-        return Response(dashboard_payload, status=status.HTTP_200_OK)
+
+        serializer = PlatformReportSerializer(data=dashboard_payload)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)

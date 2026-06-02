@@ -7,11 +7,9 @@ from drf_spectacular.utils import extend_schema_view,extend_schema
 
 
 PROJECT_SCHEMA = {
-    "application/json": {
+    "multipart/form-data": {
         "type": "object",
-        "required": [
-            "name"
-        ], 
+        "required": ["name"],
         "properties": {
             "name": {
                 "type": "string",
@@ -35,7 +33,7 @@ PROJECT_SCHEMA = {
                 "type": "array",
                 "items": {
                     "type": "string",
-                    "format": "uuid", 
+                    "format": "uuid",
                 },
                 "description": "A list of Team UUIDs associated with this project.",
             },

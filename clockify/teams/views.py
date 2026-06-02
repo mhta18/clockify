@@ -44,7 +44,7 @@ TEAM_UPLOAD_SCHEMA = {
 }
 
 TASK_SCHEMA = {
-    "application/json": {
+    "multipart/form-data": {
         "type": "object",
         "required": ["title", "team", "assigned_to", "deadline"],
         "properties": {
@@ -110,6 +110,20 @@ class TeamViewSet(viewsets.ModelViewSet):
     )
 
 
+class TaskListAPIView(generics.ListAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsObjectWorkerOrSupervisor]
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["status"]
+
+    def get_queryset(self):
+
+        user = self.request.user
+        return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
+
+
 @extend_schema_view(
     create=extend_schema(
         summary="Create a new task",
@@ -122,25 +136,9 @@ class TeamViewSet(viewsets.ModelViewSet):
         request=TASK_SCHEMA,
     ),
     partial_update=extend_schema(
-        summary="Patch an existing task",
-        description="Partially updates fields on a task. Restricted to the team's supervisor.",
         request=TASK_SCHEMA,
     ),
 )
-
-class TaskListAPIView(generics.ListAPIView):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
-    permission_classes = [IsObjectWorkerOrSupervisor]
-
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["status"]
-
-    def get_queryset(self):
-       
-        user = self.request.user
-        return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
-
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
