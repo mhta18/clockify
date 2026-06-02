@@ -1,7 +1,11 @@
 import factory
-from teams.models import Team
+from teams.models import Team,Task
+
+
 from users.tests.factories import UserFactory
 
+from django.utils import timezone
+from datetime import timedelta
 
 class TeamFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -26,3 +30,20 @@ class TeamFactory(factory.django.DjangoModelFactory):
                 self.members.add(member)
 
         self.save()
+
+
+class TaskFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Task
+
+    title = factory.Sequence(lambda n: f"Task Specification Blueprint #{n}")
+    description = factory.Faker("paragraph", nb_sentences=3)
+
+    priority = Task.Priority.MEDIUM
+    status = Task.Status.TODO
+
+    deadline = factory.LazyAttribute(lambda o: timezone.now() + timedelta(days=7))
+
+    team = factory.SubFactory(TeamFactory)
+    created_by = factory.SubFactory(UserFactory)
+    assigned_to = factory.SubFactory(UserFactory)

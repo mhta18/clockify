@@ -19,7 +19,7 @@ from .serializers import PlatformReportSerializer
     description="Aggregates platform-wide hours tracked, user demographics, age parameters, and budget distributions.",
     responses={
         200: PlatformReportSerializer
-    },  # 🟢 This generates full interactive UI schemas natively!
+    },
 )
 
 class ReportsViewSet(viewsets.ViewSet):

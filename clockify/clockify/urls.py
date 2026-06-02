@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,8 +16,7 @@ urlpatterns = [
     path(BASE_NAME, include("projects.urls")),
     path(BASE_NAME, include("contracts.urls")),
     path(BASE_NAME, include("timetracking.urls")),
-    path(BASE_NAME,include("reports.urls")),
-
+    path(BASE_NAME, include("reports.urls")),
     path(
         "api/schema/",
         SpectacularAPIView.as_view(),

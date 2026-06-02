@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "authentication",
     "timetracking",
     "reports",
+    "notifications",
     "corsheaders",
     "rest_framework",
     "drf_spectacular",
