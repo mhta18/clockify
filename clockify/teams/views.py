@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, generics
 from .models import Team, Task
-from .serializers import TeamSerializer, TaskSerializer
+from .serializers import TeamSerializer, TaskSerializer,TaskMemberUpdateSerializer
 from users.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -10,6 +10,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from django.db import models
 from .permissions import IsObjectWorkerOrSupervisor
+from notifications.services import broadcast_notification
 
 # Create your views here.
 
@@ -124,6 +125,28 @@ class TaskListAPIView(generics.ListAPIView):
         return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
 
 
+class TaskMemberUpdateAPIView(generics.UpdateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskMemberUpdateSerializer
+    permission_classes = [IsObjectWorkerOrSupervisor]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
+
+    def perform_update(self, serializer):
+        old_status = Task.objects.get(pk=serializer.instance.pk).status        
+        task = serializer.save()
+
+        if old_status != task.status and task.status == Task.Status.DONE:
+            supervisor = task.team.supervisor
+            broadcast_notification(
+                recipient=supervisor,
+                title=task.title,
+                message=f"Team member '{task.assigned_to.email}' has finished the task: '{task.title}'.",
+            )
+
+
 @extend_schema_view(
     create=extend_schema(
         summary="Create a new task",
@@ -139,7 +162,6 @@ class TaskListAPIView(generics.ListAPIView):
         request=TASK_SCHEMA,
     ),
 )
-
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -161,4 +183,11 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        task = serializer.save(created_by=self.request.user)
+
+        if task.assigned_to:
+            broadcast_notification(
+                recipient=task.assigned_to,
+                title=task.title,
+                message=f"You have been assigned a new task: '{task.title}' under team '{task.team.name}'.",
+            )

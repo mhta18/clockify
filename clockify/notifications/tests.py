@@ -1,47 +1,63 @@
 from django.test import TestCase
-from notifications.models import Notification
+import pytest
+from unittest.mock import patch
+from teams.models import Task
+from rest_framework.test import APIClient
+from projects.tests.factories import ProjectFactory
 from teams.tests.factories import TeamFactory
 from users.tests.factories import UserFactory
 from teams.tests.factories import TaskFactory
 
 # Create your tests here.
-
+pytestmark = pytest.mark.django_db
 
 class NotificationsTestCase(TestCase):
 
-    def test_notification_sent_to_member_on_task_creation(self):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin_user = UserFactory(
+            is_admin=True, email="admin@test.com", gender="male", age=30
+        )
+        self.client.force_authenticate(user=self.admin_user)
+    @patch("teams.views.broadcast_notification")
+    def test_notification_sent_to_member_on_task_creation(self, mock_send_notification):
 
         supervisor = UserFactory(email="supervisor@test com", gender="other", age=34)
         member = UserFactory(email="member@test com", gender="male", age=30)
         team = TeamFactory(supervisor=supervisor, members=[member.id])
+        self.client.force_authenticate(user=supervisor)
+        payload = {
+            "title": "Build WebSocket Interface",
+            "created_by": supervisor.id,
+            "team": team.id,
+            "assigned_to": member.id,
+            "deadline": "2026-05-30T17:00:00Z",
+            "status": "TODO",
+        }
 
-        TaskFactory(
-            title="Test Task 1",
-            team=team,
-            assigned_to=member,
-            created_by=supervisor,
-        )
+        response = self.client.post("/api/supervisor/tasks/", data =payload)
+        assert response.status_code == 201
+        mock_send_notification.assert_called_once()
+        called_recipient = mock_send_notification.call_args[1]["recipient"]
+        assert called_recipient == member
 
-        notification = Notification.objects.filter(recipient=member).first()
-        self.assertIsNotNone(notification)
-        self.assertEqual(notification.title, "Test Task 1")
-        self.assertEqual(notification.recipient, member)
-
-    def test_notification_sent_to_supervisor_on_task_completion(self):
+    @patch("teams.views.broadcast_notification")
+    def test_notification_sent_to_supervisor_on_task_completion(self, mock_send_notification):
         supervisor = UserFactory(email="supervisor@test.com", gender="other", age=34)
         member = UserFactory(email="worker@test.com", gender="male", age=30)
         team = TeamFactory(supervisor=supervisor,members=[member])
-
+        self.client.force_authenticate(user=member)
         task = TaskFactory(
-            title="Refactor DB", team=team, assigned_to=member, created_by=supervisor, status="IN_PROGRESS"
+            team=team,created_by=supervisor, assigned_to=member, status=Task.Status.IN_PROGRESS,priority=Task.Priority.HIGH
         )
-
-        Notification.objects.all().delete()
-
-        task.status = "DONE"
-        task.save()
-
-        notification = Notification.objects.filter(recipient=supervisor).first()
-        assert notification is not None
-        assert f"Task '{task.title}' is Done" in notification.title
-        assert "worker@test.com" in notification.message
+        payload = {"status": Task.Status.DONE}
+        
+        response = self.client.patch(f"/api/my-tasks/update/{task.id}/", data=payload)
+        print("////////////////////////////////////////////////////////",response.data)
+        assert response.status_code == 200
+        updated_task = Task.objects.get(id=task.id)
+        mock_send_notification.assert_called_once()
+        kwargs = mock_send_notification.call_args[1]
+        assert kwargs["recipient"] == supervisor
+        assert kwargs["title"] == task.title
+        assert updated_task.status == Task.Status.DONE

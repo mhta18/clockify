@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     "reports",
     "notifications",
     "corsheaders",
+    "channels",
     "rest_framework",
     "drf_spectacular",
     "drf_spectacular_sidecar",

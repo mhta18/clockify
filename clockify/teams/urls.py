@@ -1,6 +1,6 @@
 from django.urls import path,include
 from rest_framework .routers import DefaultRouter   
-from .views import TeamViewSet,TaskViewSet,TaskListAPIView
+from .views import TeamViewSet,TaskViewSet,TaskListAPIView,TaskMemberUpdateAPIView
 
 router =DefaultRouter()
 router.register(r'teams', TeamViewSet, basename='teams')
@@ -11,6 +11,11 @@ urlpatterns = [
         f"{BASE_NAME}/list/",
         TaskListAPIView.as_view(),
         name="my-task-list",
+    ),
+    path(
+        f"{BASE_NAME}/update/<int:pk>/",
+        TaskMemberUpdateAPIView.as_view(),
+        name="my-task-update",
     ),
     path("", include(router.urls)),
 ]

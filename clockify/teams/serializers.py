@@ -3,6 +3,7 @@ from rest_framework import serializers
 from teams.models import Team, Task
 from users.serializers import UserSerializer
 
+
 class TeamSerializer(serializers.ModelSerializer):
     supervisor_details = UserSerializer(source="supervisor", read_only=True)
     members_details = UserSerializer(source="members", many=True, read_only=True)
@@ -109,6 +110,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     created_by = serializers.ReadOnlyField(source="created_by.email")
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+
     class Meta:
         model = Task
         fields = [
@@ -127,14 +129,44 @@ class TaskSerializer(serializers.ModelSerializer):
 
         request_user = self.context["request"].user
         team = attrs.get("team")
-        assigned_to = attrs.get("assigned_to")
-
         if team and team.supervisor != request_user:
             raise serializers.ValidationError(
                 {
                     "team": f"You cannot manage tasks for '{team.name}' because you are not its assigned supervisor."
                 }
             )
+
+        return super().validate(attrs)
+
+
+class TaskMemberUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = [
+            "id",
+            "title",
+            "description",
+            "deadline",
+            "status",
+            "priority",
+            "team",
+            "assigned_to",
+        ]
+
+        read_only_fields = [
+            "id",
+            "title",
+            "description",
+            "deadline",
+            "priority",
+            "team",
+            "assigned_to",
+        ]
+
+    def validate(self, attrs):
+
+        team = attrs.get("team")
+        assigned_to = attrs.get("assigned_to")
         if team and assigned_to and assigned_to not in team.members.all():
             raise serializers.ValidationError(
                 {
