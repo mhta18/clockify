@@ -98,26 +98,26 @@ class TestTimeLogViewSet:
             monthly_payment=Decimal("3520.00"),
             employment_type=8,
         )
+        base_time = timezone.now()
         team = TeamFactory(members=[user.id])
         project = ProjectFactory(teams=[team.id])
-        start = timezone.now() - timedelta(hours=5)
+        start = base_time - timedelta(hours=5)
         active_log = TimeLogFactory(
             user=user,
             project=project,
-            description="Reviewing PRs",
+            description="Reviewing views",
             start_time=start,
-            end_time=None,
             payment=Decimal("0.00"),
         )
 
-        now = timezone.now()
         client.force_authenticate(user=user)
 
         response = client.patch(
             f"/api/timelogs/{active_log.id}/",
-            {"end_time": now.isoformat()},
+            {"end_time": timezone.now()},
             format="json",
         )
+        print("////////////////////////////////////////////////////////", response.data)
         assert response.status_code == status.HTTP_200_OK
         active_log.refresh_from_db()
         assert Decimal(response.data["payment"]) == Decimal("100.00")

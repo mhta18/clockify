@@ -1,3 +1,4 @@
+from datetime import timedelta
 import random
 import factory
 from django.utils import timezone
@@ -11,7 +12,7 @@ from decimal import Decimal
 class TimeLogFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = TimeLog
-
+    
     @factory.lazy_attribute
     def user(self):
         new_user = UserFactory()
@@ -21,7 +22,7 @@ class TimeLogFactory(factory.django.DjangoModelFactory):
 
         return new_user
 
-    start_time = factory.LazyFunction(timezone.now)
+    start_time = factory.LazyFunction(lambda: timezone.now() - timedelta(hours=1))
     end_time = None
     description = "Coding task"
     payment = Decimal("0.00")

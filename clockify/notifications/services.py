@@ -22,7 +22,6 @@ def broadcast_notification(recipient, title, message):
                 "id": notification.id,
                 "title": notification.title,
                 "message": notification.message,
-                "timestamp": notification.timestamp.isoformat(),
             },
         },
     )
