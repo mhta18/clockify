@@ -94,7 +94,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-ASGI_APPLICATION = "clockify.asgi.py"
+ASGI_APPLICATION = "clockify.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
@@ -106,7 +106,7 @@ CHANNEL_LAYERS = {
 }
 
 CELERY_BEAT_SCHEDULE = {
-    "clear_old_notifications": {
+    "auto_clear_old_notifications": {
         "task": "notifications.tasks.clear_old_notifications",
         "schedule": crontab(hour=0, minute=0),
     },
