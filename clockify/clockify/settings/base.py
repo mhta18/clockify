@@ -84,7 +84,7 @@ INSTALLED_APPS = [
     "channels",
     "rest_framework",
     "drf_spectacular",
-    "drf_spectacular_sidecar",
+    #"drf_spectacular_sidecar",
     "django_filters",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -133,7 +133,7 @@ OTP_EXPIRE_MINUTES = 10
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR /"templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -145,7 +145,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 
 REST_FRAMEWORK = {
@@ -164,6 +163,15 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Clockify Backend API",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+
+
+    "SWAGGER_UI_TEMPLATE": "swagger_dark.html",
+    "SWAGGER_UI_DIST": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5",
+    "SWAGGER_UI_FAVICON_HREF": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/favicon-32x32.png",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+    },
 }
 
 # Password validation
@@ -206,3 +214,4 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+

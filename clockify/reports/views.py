@@ -62,9 +62,11 @@ class ReportsViewSet(viewsets.ViewSet):
         freelancer_stats = freelancer_logs.aggregate(
             total_payout=Coalesce(Sum('payment'), Decimal('0.00')),
             total_time=Sum('calculated_duration'),
-            
-            men_count=Count('user', distinct=True, filter=Q(user__gender='male')),
-            women_count=Count('user', distinct=True, filter=Q(user__gender='female'))
+        )
+
+        fl_demographics = FreelancerContract.objects.aggregate(
+            men_count=Count("user", distinct=True, filter=Q(user__gender="male")),
+            women_count=Count("user", distinct=True, filter=Q(user__gender="female")),
         )
 
         fl_total_hours = round(Decimal(freelancer_stats["total_time"].total_seconds() if freelancer_stats["total_time"] else 0) / Decimal("3600.00"), 2)
@@ -74,13 +76,13 @@ class ReportsViewSet(viewsets.ViewSet):
         employer_stats =employer_logs.aggregate(
             total_payout=Coalesce(Sum('payment'), Decimal('0.00')),
             total_time=Sum('calculated_duration'),
-            
-            men_count=Count('user', distinct=True, filter=Q(user__gender='male')),
-            women_count=Count('user', distinct=True, filter=Q(user__gender='female'))
+        )
+        emp_demographics = EmployerContract.objects.aggregate(
+            men_count=Count("user", distinct=True, filter=Q(user__gender="male")),
+            women_count=Count("user", distinct=True, filter=Q(user__gender="female")),
         )
 
         emp_total_hours = round(Decimal(employer_stats["total_time"].total_seconds() if employer_stats["total_time"] else 0) / Decimal("3600.00"), 2)
-
 
         dashboard_payload = {
             "platform_wide_totals": {
@@ -97,16 +99,16 @@ class ReportsViewSet(viewsets.ViewSet):
             "freelancer_reports": {
                 "total_hours_tracked": fl_total_hours,
                 "total_payout_processed": freelancer_stats["total_payout"],
-                "total_active_contracts": freelancer_stats["men_count"] + freelancer_stats["women_count"],
-                "men_count": freelancer_stats["men_count"],
-                "women_count": freelancer_stats["women_count"],
+                "total_active_contracts": fl_demographics["men_count"] + fl_demographics["women_count"],
+                "men_count": fl_demographics["men_count"],
+                "women_count": fl_demographics["women_count"],
             },
             "employer_reports": {
                 "total_hours_tracked": emp_total_hours,
                 "total_costs_accumulated": employer_stats["total_payout"],
-                "total_active_contracts": employer_stats["men_count"] + employer_stats["women_count"],
-                "men_count": employer_stats["men_count"],
-                "women_count": employer_stats["women_count"],
+                "total_active_contracts": emp_demographics["men_count"] + emp_demographics["women_count"],
+                "men_count": emp_demographics["men_count"],
+                "women_count": emp_demographics["women_count"],
             },
         }
 

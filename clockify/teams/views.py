@@ -1,13 +1,19 @@
 from django.shortcuts import render
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics,serializers,status
 from .models import Team, Task
+from rest_framework.response import Response
 from .serializers import TeamSerializer, TaskSerializer,TaskMemberUpdateSerializer
 from users.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    inline_serializer,
+)
 from django.db import models
 from .permissions import IsObjectWorkerOrSupervisor
 from notifications.services import broadcast_notification
@@ -57,10 +63,6 @@ TASK_SCHEMA = {
             "description": {
                 "type": "string",
                 "description": "Detailed text describing the task requirements or requirements breakdown.",
-            },
-            "team": {
-                "type": "integer",
-                "description": "The ID of the exact team this task belongs to.",
             },
             "assigned_to": {
                 "type": "integer",
@@ -151,7 +153,33 @@ class TaskMemberUpdateAPIView(generics.UpdateAPIView):
     create=extend_schema(
         summary="Create a new task",
         description="Allows a team's supervisor to create and assign tasks to workers within their exact team.",
-        request=TASK_SCHEMA,
+        request=inline_serializer(
+            name="TaskFormRequest",
+            fields={
+                "title": serializers.CharField(
+                    max_length=255, help_text="The title of the task."
+                ),
+                "description": serializers.CharField(required=False),
+                "team": serializers.ChoiceField(
+                    choices=(
+                        [(t.name) for t in Team.objects.all()]
+                        if Team.objects.exists()
+                        else []
+                    ),
+                    help_text="Select the target team for this assignment.",
+                ),
+                "assigned_to": serializers.IntegerField(
+                    help_text="The ID of the team member user."
+                ),
+                "deadline": serializers.DateTimeField(
+                    help_text="The strict future deadline (ISO 8601 format)."
+                ),
+                "priority": serializers.ChoiceField(
+                    choices=["HIGH", "MEDIUM", "LOW"], default="MEDIUM"
+                ),
+            },
+        ),
+        responses={201: TaskSerializer},
     ),
     update=extend_schema(
         summary="Replace an existing task",
@@ -169,6 +197,18 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["status"]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        submitted_team_name = data.get("team")
+        if submitted_team_name:
+            team_instance = get_object_or_404(Team,name = submitted_team_name)
+            data["team"] = str(team_instance.id)
+
+        serializer = TaskSerializer(data=data, context={"request":request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by =request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED) 
 
     def get_queryset(self):
         user = self.request.user

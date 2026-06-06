@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Clockify API Docs <h1 style="color:red">CUSTOM SWAGGER TEMPLATE LOADED</h1></title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-themes@3.0.1/themes/3.x/theme-monokai.css">
+    <style>
+        body {
+            background: black !important;
+        }
+    
+        .swagger-ui {
+            filter: invert(1) hue-rotate(180deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="swagger-ui">
+        <h1>HEllooooooooooooooooooooooooooo</h1>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
+
+    <script>
+        window.onload = function () {
+            SwaggerUIBundle({
+                url: "/api/schema/",
+                dom_id: "#swagger-ui",
+                deepLinking: true,
+                persistAuthorization: true
+            });
+        };
+    </script>
+</body>
+
+</html>

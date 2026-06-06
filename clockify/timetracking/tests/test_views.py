@@ -113,7 +113,7 @@ class TestTimeLogViewSet:
         client.force_authenticate(user=user)
 
         response = client.patch(
-            f"/api/timelogs/{active_log.id}/",
+            f"/api/timelogs/{active_log.id}/stop/",
             {"end_time": timezone.now()},
             format="json",
         )

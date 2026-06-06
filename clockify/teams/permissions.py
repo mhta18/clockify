@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from authentication.permissons import IsUserAuthenticated
+from authentication.permissions import IsUserAuthenticated
 
 
 class IsObjectWorkerOrSupervisor(permissions.BasePermission):

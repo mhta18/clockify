@@ -104,42 +104,49 @@ class ReportsViewSetTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-    # def test_get_reports_http_status_success(self):
-    #     response = self.client.get("/api/admin-dashbord/user-reports/")
-    #     self.assertEqual(response.status_code, 200)
+    def test_get_reports_http_status_success(self):
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        self.assertEqual(response.status_code, 200)
 
-    # def test_get_reports_platform_totals_and_financials(self):
-    #     response = self.client.get("/api/admin-dashbord/user-reports/")
-    #     data = response.json()
+    def test_get_reports_platform_totals_and_financials(self):
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        data = response.json()
 
-    #     totals = data["platform_wide_totals"]
-    #     assert totals["total_completed_hours"] == Decimal("10.00")
-    #     assert Decimal(str(totals["total_processed_payouts"])) == Decimal("320.00")
+        totals = data["platform_wide_totals"]
+        assert totals["total_completed_hours"] == Decimal("10.00")
+        assert Decimal(str(totals["total_processed_payouts"])) == Decimal("320.00")
 
-    # def test_get_reports_contract_type_metrics(self):
-    #     response = self.client.get("/api/admin-dashbord/user-reports/")
-    #     data = response.json()
+    def test_get_reports_contract_type_metrics(self):
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        data = response.json()
 
-    #     fl_report = data["freelancer_reports"]
-    #     assert fl_report["total_hours_tracked"] == Decimal("5.00")
-    #     assert Decimal(str(fl_report["total_payout_processed"])) == Decimal("220.00")
+        fl_report = data["freelancer_reports"]
+        assert fl_report["total_hours_tracked"] == Decimal("5.00")
+        assert Decimal(str(fl_report["total_payout_processed"])) == Decimal("220.00")
 
-    #     emp_report = data["employer_reports"]
-    #     assert emp_report["total_hours_tracked"] == Decimal("5.00")
-    #     assert Decimal(str(emp_report["total_costs_accumulated"])) == Decimal("100.00")
+        emp_report = data["employer_reports"]
+        assert emp_report["total_hours_tracked"] == Decimal("5.00")
+        assert Decimal(str(emp_report["total_costs_accumulated"])) == Decimal("100.00")
 
-    # def test_get_reports_global_demographics(self):
-    #     response = self.client.get("/api/admin-dashbord/user-reports/")
-    #     data = response.json()
+    def test_get_reports_global_demographics(self):
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        data = response.json()
 
-    #     overview = data["global_overview"]
-    #     assert overview["total_registered_accounts"] == 6
-    #     assert overview["all_men"] == 3
-    #     assert overview["all_women"] == 2
-    #     assert overview["unspecified_gender"] == 1
-    #     assert overview["average_age"] is not None
+        overview = data["global_overview"]
+        assert overview["total_registered_accounts"] == 6
+        assert overview["all_men"] == 3
+        assert overview["all_women"] == 2
+        assert overview["unspecified_gender"] == 1
+        assert overview["average_age"] is not None
 
-    # def test_summary_for_nonadmin_user(self):
-    #     self.client.force_authenticate(user=self.fl_man)
-    #     response = self.client.get("/api/admin-dashbord/user-reports/")
-    #     assert response.status_code == 403
+    def test_summary_for_nonadmin_user(self):
+        self.client.force_authenticate(user=self.fl_man)
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        assert response.status_code == 403
+
+    def test_man_count_in_reports(self):
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        data = response.json()
+
+        overview = data["freelancer_reports"]
+        assert overview["men_count"] == 1

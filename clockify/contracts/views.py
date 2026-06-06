@@ -50,7 +50,7 @@ FREELANCER_CONTRACT_SCHEMA = {
             "document_file": {
                 "type": "string",
                 "format": "uri",
-                "nullable": True,
+                "nullable": False,
                 "description": "A secure URL link or binary path to the signed physical agreement paper profile.",
             },
         },

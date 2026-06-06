@@ -3,10 +3,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from django.urls import include
+from django.views.generic import TemplateView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
+
+
+
+   
 BASE_NAME = "api/"
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,6 +32,13 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
+
+     path(
+        "swagger-test/",
+        TemplateView.as_view(
+            template_name="swagger_dark.html"
+        ),
+     ),
 ]
 
 urlpatterns += static(

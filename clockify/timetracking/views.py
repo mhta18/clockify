@@ -1,7 +1,6 @@
-from django.shortcuts import render
 from rest_framework import viewsets, status
 from .serializers import TimeLogSerializer
-from authentication.permissons import IsUserAuthenticated
+from authentication.permissions import IsUserAuthenticated
 from .models import TimeLog
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,16 +17,16 @@ class TimeLogViewSet(viewsets.ModelViewSet):
         return TimeLog.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        #validate that no running time exist
+        # validate that no running time exist
         serializer.save(user=self.request.user)
 
-    @action(detail=False, methods=["post"])
-    def stop_current(self, request):
-        running_timer = TimeLog.object.filter(user=request.user, end_time__isnull=True)
+    @action(detail=True, methods=["patch","put"], url_path="stop")
+    def stop_current(self, request, pk=None):
+        running_timer = self.get_object()
 
-        if not running_timer:
+        if running_timer.end_time is not None:
             return Response(
-                {"detail": "You do not have any active running timers right now."},
+                {"detail": "This time log has already been stopped."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -51,7 +50,7 @@ class TimeLogViewSet(viewsets.ModelViewSet):
                 "start_time": timezone.now(),
             }
         )
-        
+
         cloned_log.is_valid(raise_exception=True)
         cloned_log.save(user=request.user)
 

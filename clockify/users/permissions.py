@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from authentication.permissons import IsUserAuthenticated
+from authentication.permissions import IsUserAuthenticated
 
 class IsAdminUser(BasePermission):
 

@@ -1,6 +1,8 @@
-from django.db import models
+import os
 from django.db import models
 from users.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Contract(models.Model):
@@ -8,6 +10,7 @@ class Contract(models.Model):
     role_title = models.CharField(max_length=255)
     start_date = models.DateField(null=False)
     end_date = models.DateField(null=False)
+    is_terminated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -19,7 +22,7 @@ class FreelancerContract(Contract):
     hourly_payment = models.DecimalField(max_digits=10, decimal_places=2)
     daily_hours_required = models.PositiveIntegerField()
     document_file = models.FileField(
-        upload_to="contracts/freelancers/", null=True, blank=True
+        upload_to="freelancer_contracts/", null=True, blank=True
     )
 
 
@@ -38,3 +41,27 @@ class EmployerContract(Contract):
         validators=[MinValueValidator(4), MaxValueValidator(8)],
         help_text="Designated daily contractual obligation commitment hours.",
     )
+
+
+@receiver(post_delete, sender=FreelancerContract)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    if instance.document_file:
+        if os.path.isfile(instance.document_file.path):
+            os.remove(instance.document_file.path)
+
+
+@receiver(models.signals.pre_save, sender=FreelancerContract)
+def auto_delete_file_on_change(sender, instance, **kwargs):
+    if not instance.pk:
+        return False
+
+    try:
+        old_contract = sender.objects.get(pk=instance.pk).document_file
+    except sender.DoesNotExist:
+        return False
+
+    new_contract = instance.document_file
+
+    if old_contract and old_contract != new_contract:
+        if os.path.isfile(old_contract.path):
+            os.remove(old_contract.path)

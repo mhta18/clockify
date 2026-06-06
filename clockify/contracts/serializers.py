@@ -24,6 +24,7 @@ class BaseContract(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "created_at",
+            "is_terminated",
         ]
         read_only_fields = ["created_at"]
 
@@ -57,3 +58,4 @@ class FreelanserContractSerializer(BaseContract):
             "daily_hours_required",
             "document_file",
         ]
+    

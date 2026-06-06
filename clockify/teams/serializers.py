@@ -110,7 +110,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     created_by = serializers.ReadOnlyField(source="created_by.email")
     status_display = serializers.CharField(source="get_status_display", read_only=True)
-
+    
     class Meta:
         model = Task
         fields = [
@@ -129,7 +129,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
         request_user = self.context["request"].user
         team = attrs.get("team")
-        if team and team.supervisor != request_user:
+        if  team.supervisor != request_user:
             raise serializers.ValidationError(
                 {
                     "team": f"You cannot manage tasks for '{team.name}' because you are not its assigned supervisor."

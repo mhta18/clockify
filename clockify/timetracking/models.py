@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from users.models import User
 from projects.models import Project
@@ -10,6 +11,7 @@ from contracts.models import FreelancerContract, EmployerContract
 
 
 class TimeLog(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False,default=uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="time_logs")
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="time_logs"
@@ -42,10 +44,22 @@ class TimeLog(models.Model):
         # check if user does not have any contract or belongs to any team
         if not hasattr(self.user, "teams") or not self.user.teams.exists():
             raise ValidationError("You must belong to a team to track time.")
-        if not hasattr(self.user, "contract"):
-            raise ValidationError("You must have an active contract to track time.")
+        
+        contract = self.user.contract
+        current_date = timezone.now().date()
 
-    def save(self, *file, **kwargs):
+        #Check explicit termination flag
+        if contract.is_terminated:
+            raise ValidationError("You cannot track time because your contract has been terminated.")
+
+        #Check calendar timeline boundaries (if they are trying to log time outside of it)
+        if current_date < contract.start_date:
+            raise ValidationError(f"Your contract has not started yet. It begins on {contract.start_date}.")
+            
+        if current_date > contract.end_date:
+            raise ValidationError(f"Your contract expired on {contract.end_date}. You cannot log additional hours.")
+
+    def save(self, *args, **kwargs):
 
         if self.end_time and self.duration.total_seconds() > 0:
             duration_in_hours = Decimal(self.duration.total_seconds()) / Decimal(
@@ -53,8 +67,6 @@ class TimeLog(models.Model):
             )
             if hasattr(self.user, 'contract'):
                 base_contract = self.user.contract
-
-                
 
                 if hasattr(base_contract, 'freelancercontract'):
                     freelancer_contract = FreelancerContract.objects.filter(user=self.user).first()
@@ -80,7 +92,7 @@ class TimeLog(models.Model):
         else:
             self.payment = Decimal("0.00")
         self.full_clean()
-        super().save(*file, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.first_name} - {self.project.name} - {self.duration}"
