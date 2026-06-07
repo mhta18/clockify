@@ -1,0 +1,112 @@
+To understand how rate limiting, routing, and verification work together when a user tries to log in, it helps to look at the exact lifecycle of a request hitting your AuthViewSet.
+
+When a user interacts with your login screen, the entire authentication process flows through two distinct phases: Requesting the OTP and Verifying the OTP.
+
+Here is a step-by-step breakdown of exactly what happens under the hood during these API calls.
+
+Phase 1: Requesting an OTP (/api/auth/request_otp/)
+This phase handles verifying that the request is safe, generating a short-lived token, and sending it to the user.
+
+[ Frontend Client ] 
+        │
+        │ 1. POST /api/auth/request_otp/ (Payload: email)
+        ▼
+┌────────────────────────────────────────────────────────┐
+│ Django REST Framework Middleware Engine               │
+│                                                        │
+│  2. DRF calls get_throttles() ──► Checks IP history    │
+│                                   in Cache             │
+└─────────────────────────┬──────────────────────────────┘
+                          │
+                ┌─────────┴─────────┐
+         [Over Limit?]       [Under Limit?]
+                │                   │
+                ▼                   ▼
+         Returns HTTP 429     3. Enters request_otp() View
+        (Too Many Requests)         │
+                                    ▼
+                      4. RequestOTPSerializer validates email
+                                    │
+                                    ▼
+                      5. Generates code & saves to LoginOTP DB
+                                    │
+                                    ▼
+                      6. Triggers send_otp_email(email, code)
+                                    │
+                                    ▼
+                      7. Returns HTTP 200 OK ("OTP sent")
+1. The Request Arrives
+The frontend sends an HTTP POST request to /api/auth/request_otp/ containing a JSON payload, for example: {"email": "user@example.com"}.
+
+2. The Throttling Guard Checks the IP
+Before Django executes a single line of your view code, DRF triggers your custom get_throttles() method.
+
+It sees self.action == 'request_otp' and injects self.throttle_scope = 'login'.
+
+It extracts the client's IP Address.
+
+It checks your application cache (like Redis or local memory) to see how many times that exact IP address has touched a 'login' scoped endpoint in the last 60 seconds.
+
+If they exceeded 5 requests: It halts immediately, skips your view entirely, and returns an HTTP 429 Too Many Requests error.
+
+If they are within the limit: It registers this timestamp in the cache counter and lets the request pass through.
+
+3. Serializer Validation
+The request reaches request_otp(self, request). The RequestOTPSerializer inspects the incoming payload. It ensures the email is properly formatted and present. If validation fails, it stops and sends back an HTTP 400 Bad Request.
+
+4. Token Generation & Storage
+Your utility function generate_otp().upper() generates a random code (e.g., A7B2X9). Django then fires a SQL INSERT statement to save this combination into your PostgreSQL database table (LoginOTP), linking the email address with the newly minted tracking code.
+
+5. Notification Dispatch & Response
+The system calls send_otp_email(email, code). This hands the payload off to an email server to deliver the code to the user's inbox. Finally, the view returns an HTTP 200 OK response: {"message": "OTP sent successfully"}.
+
+Phase 2: Verifying the OTP (/api/auth/verify_otp/)
+Once the user gets the code from their inbox, they type it into the frontend, initiating the second half of the sequence.
+
+[ Frontend Client ] 
+        │
+        │ 1. POST /api/auth/verify_otp/ (Payload: email, code)
+        ▼
+┌────────────────────────────────────────────────────────┐
+│ Django REST Framework Middleware Engine               │
+│                                                        │
+│  2. Dynamic Rate Limiting Guard Check (IP Address)     │
+└─────────────────────────┬──────────────────────────────┘
+                          │
+                ┌─────────┴─────────┐
+         [Over Limit?]       [Under Limit?]
+                │                   │
+                ▼                   ▼
+         Returns HTTP 429     3. Enters verify_otp() View
+                                    │
+                                    ▼
+                      4. VerifyOTPSerializer checks DB:
+                         - Does email + code match?
+                         - Is it expired?
+                                    │
+                                    ▼
+                      5. serializer.save() generates standard
+                         JWT access & refresh tokens
+                                    │
+                                    ▼
+                      6. Returns HTTP 200 OK containing tokens
+1. The Verification Request Arrives
+The user submits the form. The frontend hits /api/auth/verify_otp/ with a payload containing both details: {"email": "user@example.com", "code": "A7B2X9"}.
+
+2. Shared Rate Limit Evaluation
+The request hits get_throttles() again. Because this action is also bound to the 'login' scope, it counts against the same 5-request burst limit. This prevents a malicious script from requesting 1 OTP and then trying to rapidly brute-force guess the code 100 times in a row on the verification endpoint.
+
+3. Database Matching via Serializer
+The view hands the data to VerifyOTPSerializer(data=request.data). Inside the serializer's validation lifecycle:
+
+It queries the LoginOTP table for the matching email.
+
+It compares the code strings.
+
+It looks at the row's created_at timestamp to make sure it hasn't expired (e.g., if it's older than 5 or 10 minutes).
+
+4. Token Issuance
+If everything is valid, serializer.save() executes. It fetches your actual User account model, logs the session update, and utilizes your authentication configuration to generate authentication keys (like SimpleJWT access and refresh tokens).
+
+5. Successful Login Response
+The view sends back an HTTP 200 OK status with the tokens in the payload. The frontend saves these tokens securely (like in localStorage or a secure cookie) and attaches them to the header of all future requests—such as when the user starts tracking time logs or viewing their contracts!
