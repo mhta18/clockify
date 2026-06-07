@@ -156,6 +156,12 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "drf_excel.renderers.XLSXRenderer",
     ),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "5/minute", 
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -214,4 +220,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
