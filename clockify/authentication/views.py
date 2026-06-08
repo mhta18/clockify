@@ -1,10 +1,8 @@
-from django.conf import settings
-from django.utils import timezone
-from django.contrib.auth import get_user_model
+from django.shortcuts import render
 from drf_spectacular.utils import extend_schema
 
 
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -19,19 +17,16 @@ from .serializers import (
 from .utils import generate_otp
 from .services import send_otp_email
 
-
-
 # url_path = method name
 
 
 class AuthViewSet(viewsets.ViewSet):
 
     def get_throttles(self):
-        if self.action in ["request_otp" , "verify_otp"]:
-            self.throttle_scope = 'login'
+        if self.action in ["request_otp", "verify_otp"]:
+            self.throttle_scope = "login"
         return [ScopedRateThrottle()]
 
-        return super().get_throttles()
     @extend_schema(
         request=RequestOTPSerializer,
     )

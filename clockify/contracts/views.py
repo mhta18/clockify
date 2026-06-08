@@ -2,10 +2,9 @@ from django.shortcuts import render
 from .serializers import EmployerContractSerializer, FreelanserContractSerializer
 from .models import FreelancerContract, EmployerContract
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import generics, mixins,viewsets
+from rest_framework import generics, mixins, viewsets
 from users.permissions import IsAdminUser
 
-# Create your views here.
 FREELANCER_CONTRACT_SCHEMA = {
     "multipart/form-data": {
         "type": "object",
@@ -131,6 +130,7 @@ FREELANCER_CONTRACT_SCHEMA_VIEW = extend_schema_view(
     ),
 )
 
+
 class FreelancerContractViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -164,12 +164,13 @@ EMPLOYER_CONTRACT_SCHEMA_VIEW = extend_schema_view(
     ),
 )
 
+
 class EmployerContractViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = EmployerContract.objects.all()
     serializer_class = EmployerContractSerializer

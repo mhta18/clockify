@@ -1,7 +1,8 @@
-from rest_framework import viewsets, generics,serializers,status
+from django.shortcuts import render
+from rest_framework import viewsets, generics, serializers, status
 from .models import Team, Task
 from rest_framework.response import Response
-from .serializers import TeamSerializer, TaskSerializer,TaskMemberUpdateSerializer
+from .serializers import TeamSerializer, TaskSerializer, TaskMemberUpdateSerializer
 from users.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -15,8 +16,6 @@ from drf_spectacular.utils import (
 )
 from .permissions import IsObjectWorkerOrSupervisor
 from notifications.services import broadcast_notification
-
-# Create your views here.
 
 TEAM_UPLOAD_SCHEMA = {
     "multipart/form-data": {
@@ -126,7 +125,7 @@ class TaskListAPIView(generics.ListAPIView):
 
 
 class TaskMemberUpdateAPIView(generics.UpdateAPIView):
-    
+
     queryset = Task.objects.all()
     serializer_class = TaskMemberUpdateSerializer
     permission_classes = [IsObjectWorkerOrSupervisor]
@@ -137,7 +136,7 @@ class TaskMemberUpdateAPIView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         original_task = Task.objects.get(pk=serializer.instance.pk)
-        old_status = original_task.status        
+        old_status = original_task.status
         task = serializer.save()
 
         if old_status != task.status and task.status == Task.Status.DONE:
@@ -203,10 +202,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         data = request.data.copy()
         submitted_team_name = data.get("team")
         if submitted_team_name:
-            team_instance = get_object_or_404(Team,name = submitted_team_name)
+            team_instance = get_object_or_404(Team, name=submitted_team_name)
             data["team"] = str(team_instance.id)
 
-        serializer = self.get_serializer(data=data, context={"request":request})
+        serializer = self.get_serializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         print("2. Serializer is valid! Calling perform_create...")
         self.perform_create(serializer)

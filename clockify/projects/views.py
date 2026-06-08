@@ -3,8 +3,7 @@ from rest_framework import viewsets, generics, mixins
 from .serializers import ProjectSerializer
 from .models import Project
 from users.permissions import IsAdminUser
-from drf_spectacular.utils import extend_schema_view,extend_schema
-
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 PROJECT_SCHEMA = {
     "multipart/form-data": {
@@ -41,6 +40,7 @@ PROJECT_SCHEMA = {
     }
 }
 
+
 class ProjctListAPIView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -61,13 +61,12 @@ class ProjctListAPIView(generics.ListAPIView):
         description="Partially alter optional properties of a project.",
     ),  # PATCH /projects/{id}/
 )
-
 class ProjctViewSet(
     mixins.RetrieveModelMixin,
     mixins.DestroyModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer

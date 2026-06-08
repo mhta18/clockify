@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import viewsets, status
 from .serializers import TimeLogSerializer
 from authentication.permissions import IsUserAuthenticated
@@ -5,8 +6,6 @@ from .models import TimeLog
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-
-# Create your views here.
 
 
 class TimeLogViewSet(viewsets.ModelViewSet):
@@ -20,7 +19,7 @@ class TimeLogViewSet(viewsets.ModelViewSet):
         # validate that no running time exist
         serializer.save(user=self.request.user)
 
-    @action(detail=True, methods=["patch","put"], url_path="stop")
+    @action(detail=True, methods=["patch", "put"], url_path="stop")
     def stop_current(self, request, pk=None):
         running_timer = self.get_object()
 

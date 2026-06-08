@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.types import OpenApiTypes
@@ -93,7 +93,6 @@ class UserListAPIView(generics.ListAPIView):
 
         return super().list(request, *args, **kwargs)
 
-    
 
 AVATAR_FORM_SCHEMA = {
     "multipart/form-data": {

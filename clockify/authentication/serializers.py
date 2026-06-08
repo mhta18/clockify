@@ -56,6 +56,7 @@ class VerifyOTPSerializer(serializers.Serializer):
         attrs["otp"] = otp
 
         return attrs
+
     def create(self, validated_data):
 
         email = validated_data["email"]

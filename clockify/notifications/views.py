@@ -1,14 +1,13 @@
+from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from authentication.permissions import IsUserAuthenticated
 from .models import Notification
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-# Create your views here.
 
 
 class NotificationMarkReadAPIView(APIView):
-
 
     permission_classes = [IsUserAuthenticated]
 
