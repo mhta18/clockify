@@ -29,18 +29,19 @@ class NotificationsTestCase(TestCase):
 
         supervisor = UserFactory(email="supervisor@test com", gender="other", age=34)
         member = UserFactory(email="member@test com", gender="male", age=30)
-        team = TeamFactory(supervisor=supervisor, members=[member.id])
+        team = TeamFactory(supervisor=supervisor, members=[member.id],name= "Backend first")
         self.client.force_authenticate(user=supervisor)
         payload = {
             "title": "Build WebSocket Interface",
             "created_by": supervisor.id,
-            "team": team.id,
+            "team": "Backend first",
             "assigned_to": member.id,
             "deadline": "2026-05-30T17:00:00Z",
             "status": "TODO",
         }
 
         response = self.client.post("/api/supervisor/tasks/", data=payload)
+        print("/////////////////////////////////",response.data)
         assert response.status_code == 201
         mock_send_notification.assert_called_once()
         called_recipient = mock_send_notification.call_args[1]["recipient"]

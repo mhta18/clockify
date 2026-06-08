@@ -98,10 +98,7 @@ ASGI_APPLICATION = "clockify.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
 
@@ -169,15 +166,6 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Clockify Backend API",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-
-
-    "SWAGGER_UI_TEMPLATE": "swagger_dark.html",
-    "SWAGGER_UI_DIST": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5",
-    "SWAGGER_UI_FAVICON_HREF": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/favicon-32x32.png",
-    "SWAGGER_UI_SETTINGS": {
-        "deepLinking": True,
-        "persistAuthorization": True,
-    },
 }
 
 # Password validation

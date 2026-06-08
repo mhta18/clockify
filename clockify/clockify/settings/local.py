@@ -1,8 +1,6 @@
 from .base import *
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 DEBUG = True
-TEMPLATES[0]["DIRS"] = [Path(__file__).resolve().parent.parent / "templates"]
 SECRET_KEY = "django-insecure-local-development-key-leave-this-here"
 
 ALLOWED_HOSTS = [

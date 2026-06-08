@@ -10,8 +10,6 @@ from drf_spectacular.views import (
 )
 
 
-
-   
 BASE_NAME = "api/"
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -22,6 +20,7 @@ urlpatterns = [
     path(BASE_NAME, include("contracts.urls")),
     path(BASE_NAME, include("timetracking.urls")),
     path(BASE_NAME, include("reports.urls")),
+    path(BASE_NAME, include("notifications.urls")),
     path(
         "api/schema/",
         SpectacularAPIView.as_view(),
@@ -32,17 +31,13 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
-
-     path(
+    path(
         "swagger-test/",
-        TemplateView.as_view(
-            template_name="swagger_dark.html"
-        ),
-     ),
+        TemplateView.as_view(template_name="swagger_dark.html"),
+    ),
 ]
 
 urlpatterns += static(
     settings.MEDIA_URL,
     document_root=settings.MEDIA_ROOT,
 )
-

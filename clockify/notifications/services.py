@@ -1,3 +1,4 @@
+import logging
 from .models import Notification
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -10,7 +11,6 @@ def broadcast_notification(recipient, title, message):
         title=title,
         message=message,
     )
-
     channel_layer = get_channel_layer()
     target_group = f"user_notifications_{recipient.id}"
 
@@ -25,3 +25,5 @@ def broadcast_notification(recipient, title, message):
             },
         },
     )
+
+    return notification

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import viewsets, generics,serializers,status
 from .models import Team, Task
 from rest_framework.response import Response
@@ -14,7 +13,6 @@ from drf_spectacular.utils import (
     extend_schema,
     inline_serializer,
 )
-from django.db import models
 from .permissions import IsObjectWorkerOrSupervisor
 from notifications.services import broadcast_notification
 
@@ -128,6 +126,7 @@ class TaskListAPIView(generics.ListAPIView):
 
 
 class TaskMemberUpdateAPIView(generics.UpdateAPIView):
+    
     queryset = Task.objects.all()
     serializer_class = TaskMemberUpdateSerializer
     permission_classes = [IsObjectWorkerOrSupervisor]
@@ -137,7 +136,8 @@ class TaskMemberUpdateAPIView(generics.UpdateAPIView):
         return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
 
     def perform_update(self, serializer):
-        old_status = Task.objects.get(pk=serializer.instance.pk).status        
+        original_task = Task.objects.get(pk=serializer.instance.pk)
+        old_status = original_task.status        
         task = serializer.save()
 
         if old_status != task.status and task.status == Task.Status.DONE:
@@ -199,16 +199,21 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status"]
 
     def create(self, request, *args, **kwargs):
+        print("1. Enter Create View")
         data = request.data.copy()
         submitted_team_name = data.get("team")
         if submitted_team_name:
             team_instance = get_object_or_404(Team,name = submitted_team_name)
             data["team"] = str(team_instance.id)
 
-        serializer = TaskSerializer(data=data, context={"request":request})
+        serializer = self.get_serializer(data=data, context={"request":request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(created_by =request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED) 
+        print("2. Serializer is valid! Calling perform_create...")
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def get_queryset(self):
         user = self.request.user
