@@ -4,7 +4,7 @@ from users.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from django.db.models import Count, Q, ExpressionWrapper, fields, Sum, F
+from django.db.models import Count, Q, ExpressionWrapper, fields, Sum, F,Avg,FloatField
 from django.db.models.functions import Coalesce
 from users.models import User
 from decimal import Decimal
@@ -47,8 +47,14 @@ class ReportsViewSet(viewsets.ViewSet):
         freelancer_logs = completed_logs.filter(
             user__contract__freelancercontract__isnull=False
         ).annotate(calculated_duration=duration_expression)
-        avarage_age = User.objects.aggregate(
-            average_age=Coalesce(Sum("age") / Count("id"), 0)
+        average_age = User.objects.aggregate(
+            average_age=Coalesce(
+                ExpressionWrapper(
+                    Avg("age", filter=Q(age__isnull=False)), 
+                    output_field=FloatField()
+                ), 
+                0.0
+            )
         )["average_age"]
         global_status = User.objects.aggregate(
             total_users=Count("id"),
@@ -110,7 +116,7 @@ class ReportsViewSet(viewsets.ViewSet):
                 "all_men": global_status["total_men"],
                 "all_women": global_status["total_women"],
                 "unspecified_gender": global_status["total_unspecified"],
-                "average_age": round(avarage_age, 2) if avarage_age else None,
+                "average_age": round(average_age, 2) if average_age else None,
             },
             "freelancer_reports": {
                 "total_hours_tracked": fl_total_hours,

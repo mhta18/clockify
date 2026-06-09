@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
-from celery.schedules import crontab
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -119,7 +119,7 @@ CHANNEL_LAYERS = {
 CELERY_BEAT_SCHEDULE = {
     "auto_clear_old_notifications": {
         "task": "notifications.tasks.auto_clear_old_notifications",
-        "schedule": crontab(minute=2),
+        "schedule": timedelta(minutes=2),
     },
 }
 

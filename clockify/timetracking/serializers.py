@@ -1,11 +1,9 @@
 from django.core.exceptions import (
     ValidationError as DjangoValidationError,
-    ValidationErrorMessageArg as DRFValidationError,
 )
 
 from rest_framework import serializers
 from .models import TimeLog
-from projects.models import Project
 
 
 class TimeLogSerializer(serializers.ModelSerializer):
@@ -20,28 +18,29 @@ class TimeLogSerializer(serializers.ModelSerializer):
             "description",
             "start_time",
             "end_time",
-            "duration_seconds",     
-            "payment",       
+            "duration_seconds",
+            "payment",
         ]
-        read_only_fields = ["user" , "duration_seconds"]
+        read_only_fields = ["user", "duration_seconds"]
 
-    def get_duration_seconds(self,obj):
+    def get_duration_seconds(self, obj):
         if obj.duration is None:
             return 0
         return int(obj.duration.total_seconds())
 
     def validate(self, attrs):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if not request:
             return attrs
 
         user = request.user
-        instance = TimeLog(user=user,**attrs)
+        instance = TimeLog(user=user, **attrs)
 
+        from rest_framework.exceptions import ValidationError as DRFValidationError
 
         try:
             instance.clean()
         except DjangoValidationError as e:
-            raise DRFValidationError(
+            raise serializers.ValidationError(
                 detail=e.message_dict if hasattr(e, "message_dict") else e.messages
             )
