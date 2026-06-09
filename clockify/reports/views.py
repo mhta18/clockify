@@ -54,9 +54,7 @@ class ReportsViewSet(viewsets.ViewSet):
             total_users=Count("id"),
             total_men=Count("id", filter=Q(gender="male")),
             total_women=Count("id", filter=Q(gender="female")),
-            total_unspecified=Count(
-                "id", filter=Q(gender="other") | Q(gender__isnull=True)
-            ),
+            total_unspecified= Count("id", filter=Q(gender="other")),
         )
 
         freelancer_stats = freelancer_logs.aggregate(
@@ -67,6 +65,7 @@ class ReportsViewSet(viewsets.ViewSet):
         fl_demographics = FreelancerContract.objects.aggregate(
             men_count=Count("user", distinct=True, filter=Q(user__gender="male")),
             women_count=Count("user", distinct=True, filter=Q(user__gender="female")),
+            other_count=Count("user", distinct=True, filter=Q(user__gender="other")),
         )
 
         fl_total_hours = round(
@@ -88,6 +87,7 @@ class ReportsViewSet(viewsets.ViewSet):
         emp_demographics = EmployerContract.objects.aggregate(
             men_count=Count("user", distinct=True, filter=Q(user__gender="male")),
             women_count=Count("user", distinct=True, filter=Q(user__gender="female")),
+            other_count=Count("user", distinct=True, filter=Q(user__gender="other")),
         )
 
         emp_total_hours = round(
@@ -119,6 +119,7 @@ class ReportsViewSet(viewsets.ViewSet):
                 + fl_demographics["women_count"],
                 "men_count": fl_demographics["men_count"],
                 "women_count": fl_demographics["women_count"],
+                "other_count": fl_demographics["other_count"],
             },
             "employer_reports": {
                 "total_hours_tracked": emp_total_hours,
@@ -127,6 +128,7 @@ class ReportsViewSet(viewsets.ViewSet):
                 + emp_demographics["women_count"],
                 "men_count": emp_demographics["men_count"],
                 "women_count": emp_demographics["women_count"],
+                "other_count": fl_demographics["other_count"],
             },
         }
 

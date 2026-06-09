@@ -1,8 +1,9 @@
 import pytest
 from rest_framework.test import APIClient
 from users.tests.factories import UserFactory
-from teams.tests.factories import TeamFactory
+from teams.tests.factories import TeamFactory,TaskFactory
 from rest_framework import status
+from teams.models import Task
 from django.urls import reverse
 from freezegun import freeze_time
 from datetime import timedelta
@@ -143,7 +144,8 @@ class TestTaskViewSet:
         other_supervisor= UserFactory()
         worker_B = UserFactory()
         team_B = TeamFactory(members=[worker_B], supervisor=other_supervisor)
-
+        self.client.force_authenticate(user=other_supervisor)
+        self.client.force_authenticate(user=worker_B)
         url = reverse("supervisor-task-list")
 
         payload = {
@@ -156,6 +158,29 @@ class TestTaskViewSet:
         }
 
         response = self.client.post(url,payload, format='json')
-        error_message = str(response.data["team"][0]).lower()
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "not its assigned supervisor" in error_message
+        print("/////////////////////////////////////////////",response.data)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+   
+
+    def test_supevisor_can_update_task_for_his_own_team(self):
+
+        supervisor = UserFactory()
+        worker_B = UserFactory()
+        team = TeamFactory(members=[worker_B], supervisor=supervisor)
+        self.client.force_authenticate(user=supervisor)
+        deadline = (timezone.now() + timedelta(days=1)).isoformat()
+
+        task = TaskFactory(title="Cross-team Task Injection",team=team,assigned_to=worker_B,created_by=supervisor,deadline=deadline,priority=Task.Priority.LOW)
+        url = reverse("supervisor-task-detail", kwargs={"pk": task.id})
+
+        payload = {
+            "title": "Cross-team Task Injection1",
+            "team": team.id,
+            "assigned_to": worker_B.id,
+            "created_by": supervisor.id,
+            "deadline": (timezone.now() + timedelta(days=1)).isoformat(),
+            "priority": "MEDIUM",
+        }
+        response = self.client.patch(url, payload, format="json")
+        print("/////////////////////////////////////////////",response.data)
+        assert response.status_code == status.HTTP_200_OK

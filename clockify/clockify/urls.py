@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from django.urls import include
+from django.conf.urls.i18n import set_language
 from django.views.generic import TemplateView
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -13,6 +14,7 @@ from drf_spectacular.views import (
 BASE_NAME = "api/"
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("i18n/", set_language, name="set_language"),
     path(BASE_NAME, include("users.urls")),
     path(BASE_NAME, include("authentication.urls")),
     path(BASE_NAME, include("teams.urls")),
@@ -36,6 +38,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="swagger_dark.html"),
     ),
 ]
+
 
 urlpatterns += static(
     settings.MEDIA_URL,

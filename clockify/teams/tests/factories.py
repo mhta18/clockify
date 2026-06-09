@@ -14,7 +14,7 @@ class TeamFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Engineeering Team {n}")
     description = factory.Faker("paragraph", nb_sentences=3)
 
-    supervisor = factory.SubFactory(UserFactory,gender="other",email="supervisor@test.com", is_active=True, age=34)
+    supervisor = factory.SubFactory(UserFactory,gender="other", is_active=True, age=34)
     logo = factory.django.ImageField(filename="alpha_team_logo.png")
     @factory.post_generation
     def members(self, create, extracted, **kwargs):

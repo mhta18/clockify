@@ -83,6 +83,7 @@ class ReportsViewSetTestCase(TestCase):
             start_time=now - timedelta(hours=5),
             end_time=now,
         )
+        
 
         TimeLogFactory(
             user=self.emp_woman, project=self.project, start_time=now, end_time=None
@@ -99,10 +100,9 @@ class ReportsViewSetTestCase(TestCase):
             print(
                 f"TimeLog - User: {t.user.email}, Project: {t.project.name}, Start: {t.start_time}, End: {t.end_time}"
             )
-        
+
         response = self.client.get("/api/admin-dashbord/user-reports/")
         self.assertEqual(response.status_code, 200)
-
 
     def test_get_reports_http_status_success(self):
         response = self.client.get("/api/admin-dashbord/user-reports/")
@@ -144,9 +144,17 @@ class ReportsViewSetTestCase(TestCase):
         response = self.client.get("/api/admin-dashbord/user-reports/")
         assert response.status_code == 403
 
-    def test_man_count_in_reports(self):
+    def test_man_count_for_freelancer_in_reports(self):
         response = self.client.get("/api/admin-dashbord/user-reports/")
         data = response.json()
 
         overview = data["freelancer_reports"]
         assert overview["men_count"] == 1
+
+    def test_other_count_for_freelancer_in_reports(self):
+        response = self.client.get("/api/admin-dashbord/user-reports/")
+        print("/////////////////////////////",response.data)
+        data = response.json()
+
+        overview = data["freelancer_reports"]
+        assert overview["other_count"] == 0

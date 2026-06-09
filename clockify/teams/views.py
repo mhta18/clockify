@@ -198,7 +198,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status"]
 
     def create(self, request, *args, **kwargs):
-        print("1. Enter Create View")
         data = request.data.copy()
         submitted_team_name = data.get("team")
         if submitted_team_name:
@@ -207,7 +206,6 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        print("2. Serializer is valid! Calling perform_create...")
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(

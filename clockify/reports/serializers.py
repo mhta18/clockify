@@ -20,6 +20,7 @@ class FreelancerReportSerializer(serializers.Serializer):
     total_active_contracts = serializers.IntegerField()
     men_count = serializers.IntegerField()
     women_count = serializers.IntegerField()
+    other_count = serializers.IntegerField()
 
 
 class EmployerReportSerializer(serializers.Serializer):
@@ -30,6 +31,7 @@ class EmployerReportSerializer(serializers.Serializer):
     total_active_contracts = serializers.IntegerField()
     men_count = serializers.IntegerField()
     women_count = serializers.IntegerField()
+    other_count = serializers.IntegerField()
 
 
 class PlatformReportSerializer(serializers.Serializer):

@@ -16,6 +16,20 @@ from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+LANGUAGE_CODE = 'en-us'
+LANGUAGE = [
+    ('en','English'),
+    ('es', 'Spanish'),
+]
+
+LOCAL_PATHS = [
+    BASE_DIR / 'locale',
+]
+
 LOGS_DIR = BASE_DIR / "logs"
 LOG_FILE_PATH = str(LOGS_DIR / "api.log")
 
@@ -104,8 +118,8 @@ CHANNEL_LAYERS = {
 
 CELERY_BEAT_SCHEDULE = {
     "auto_clear_old_notifications": {
-        "task": "notifications.tasks.clear_old_notifications",
-        "schedule": crontab(hour=0, minute=0),
+        "task": "notifications.tasks.auto_clear_old_notifications",
+        "schedule": crontab(minute=2),
     },
 }
 
@@ -113,6 +127,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
