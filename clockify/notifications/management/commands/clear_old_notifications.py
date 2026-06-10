@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        one_month_ago = timezone.now() - timedelta(days=30)
+        one_month_ago = timezone.now() - timedelta(minutes=2)
 
         deleted_count = Notification.objects.filter(created_at__lt=one_month_ago).delete()
 

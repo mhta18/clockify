@@ -116,12 +116,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-CELERY_BEAT_SCHEDULE = {
-    "auto_clear_old_notifications": {
-        "task": "notifications.tasks.auto_clear_old_notifications",
-        "schedule": timedelta(minutes=2),
-    },
-}
+
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
