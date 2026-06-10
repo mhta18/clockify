@@ -2,6 +2,7 @@ import os
 from rest_framework import serializers
 from teams.models import Team, Task
 from users.serializers import UserSerializer
+from users.models import User
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -105,12 +106,21 @@ class TeamSerializer(serializers.ModelSerializer):
 
         return attrs
 
+class TeamMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+
+        # Customize these fields depending on your User model attributes
+        fields = ["id", "first_name", "last_name", "email"]
+
+from rest_framework import serializers
+from .models import Task, Team
+
 
 class TaskSerializer(serializers.ModelSerializer):
-
     created_by = serializers.ReadOnlyField(source="created_by.email")
     status_display = serializers.CharField(source="get_status_display", read_only=True)
-    
+
     class Meta:
         model = Task
         fields = [
@@ -118,21 +128,42 @@ class TaskSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "status_display",
-            "team",
+            "team",  
             "created_by",
-            "assigned_to",
+            "assigned_to", 
             "deadline",
             "priority",
         ]
+        read_only_fields = ["team"]
 
     def validate(self, attrs):
-
         request_user = self.context["request"].user
-        team = attrs.get("team")
-        if  team.supervisor != request_user:
+
+        assigned_to = attrs.get("assigned_to") or getattr(
+            self.instance, "assigned_to", None
+        )
+
+        if not assigned_to:
+            raise serializers.ValidationError(
+                {"assigned_to": "You must assign this task to a valid team member."}
+            )
+
+        # Find the unique team connecting this supervisor and this member
+        try:
+            detected_team = Team.objects.get(
+                supervisor=request_user, members=assigned_to
+            )
+            attrs["team"] = detected_team
+        except Team.DoesNotExist:
             raise serializers.ValidationError(
                 {
-                    "team": f"You cannot manage tasks for '{team.name}' because you are not its assigned supervisor."
+                    "assigned_to": f"The selected user is not a member of any team managed by you."
+                }
+            )
+        except Team.MultipleObjectsReturned:
+            raise serializers.ValidationError(
+                {
+                    "assigned_to": "Ambiguity error: Multiple teams match this supervisor and member configuration."
                 }
             )
 

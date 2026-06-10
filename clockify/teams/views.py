@@ -2,13 +2,15 @@ from django.shortcuts import render
 from rest_framework import viewsets, generics, serializers, status
 from .models import Team, Task
 from rest_framework.response import Response
-from .serializers import TeamSerializer, TaskSerializer, TaskMemberUpdateSerializer
+from .serializers import TeamSerializer, TaskSerializer, TaskMemberUpdateSerializer,TeamMemberSerializer
 from users.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.exceptions import NotFound
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view,permission_classes
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
@@ -50,7 +52,7 @@ TEAM_UPLOAD_SCHEMA = {
 TASK_SCHEMA = {
     "multipart/form-data": {
         "type": "object",
-        "required": ["title", "team", "assigned_to", "deadline"],
+        "required": ["title", "assigned_to", "deadline"],
         "properties": {
             "title": {
                 "type": "string",
@@ -109,7 +111,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         FormParser,
     )
 
-
+# member
 class TaskListAPIView(generics.ListAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -123,7 +125,7 @@ class TaskListAPIView(generics.ListAPIView):
         user = self.request.user
         return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
 
-
+# member
 class TaskMemberUpdateAPIView(generics.UpdateAPIView):
 
     queryset = Task.objects.all()
@@ -159,14 +161,6 @@ class TaskMemberUpdateAPIView(generics.UpdateAPIView):
                     max_length=255, help_text="The title of the task."
                 ),
                 "description": serializers.CharField(required=False),
-                "team": serializers.ChoiceField(
-                    choices=(
-                        [(t.name) for t in Team.objects.all()]
-                        if Team.objects.exists()
-                        else []
-                    ),
-                    help_text="Select the target team for this assignment.",
-                ),
                 "assigned_to": serializers.IntegerField(
                     help_text="The ID of the team member user."
                 ),
@@ -198,13 +192,10 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status"]
 
     def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        submitted_team_name = data.get("team")
-        if submitted_team_name:
-            team_instance = get_object_or_404(Team, name=submitted_team_name)
-            data["team"] = str(team_instance.id)
-
-        serializer = self.get_serializer(data=data, context={"request": request})
+        # 🟢 Clean and simple: Let the serializer handle assignment verification automatically
+        serializer = self.get_serializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -233,3 +224,19 @@ class TaskViewSet(viewsets.ModelViewSet):
                 title=task.title,
                 message=f"You have been assigned a new task: '{task.title}' under team '{task.team.name}'.",
             )
+
+
+class SupervisorTeamMemberListView(generics.ListAPIView):
+    serializer_class = TeamMemberSerializer
+    permission_classes = [IsObjectWorkerOrSupervisor]
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            # Find the team supervised by this user
+            team = Team.objects.get(supervisor=user)
+            # Return the queryset of members belonging to that team
+            return team.members.all()
+        except Team.DoesNotExist:
+            # Raise a clean 404 exception if they aren't a supervisor
+            raise NotFound("You do not have any active teams assigned as a supervisor.")
