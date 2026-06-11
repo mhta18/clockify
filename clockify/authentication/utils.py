@@ -1,7 +1,10 @@
-import random
 import string
+import secrets
 
 
-def generate_otp(length=6):
-    char = string.ascii_uppercase + string.digits
-    return "".join(random.choice(char) for _ in range(length))
+def generate_secure_otp(length=6):
+
+
+    pool = string.ascii_uppercase + string.digits
+
+    return "".join(secrets.choice(pool) for _ in range(length))

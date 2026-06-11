@@ -14,7 +14,7 @@ from .serializers import (
     VerifyOTPSerializer,
 )
 
-from .utils import generate_otp
+from .utils import generate_secure_otp
 from .services import send_otp_email
 
 # url_path = method name
@@ -39,7 +39,10 @@ class AuthViewSet(viewsets.ViewSet):
 
         email = serializer.validated_data["email"]
 
-        code = generate_otp().upper()
+        # clean previous unused code
+        LoginOTP.objects.filter(email=email).delete()
+
+        code = generate_secure_otp().upper()
 
         LoginOTP.objects.create(
             email=email,
