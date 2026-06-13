@@ -14,7 +14,6 @@ from drf_spectacular.views import (
 BASE_NAME = "api/"
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("i18n/", set_language, name="set_language"),
     path(BASE_NAME, include("users.urls")),
     path(BASE_NAME, include("authentication.urls")),
     path(BASE_NAME, include("teams.urls")),

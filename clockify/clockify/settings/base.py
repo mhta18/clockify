@@ -20,6 +20,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+TIME_ZONE = 'UTC'
 LANGUAGE_CODE = 'en-us'
 LANGUAGE = [
     ('en','English'),
@@ -99,6 +100,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     #"drf_spectacular_sidecar",
+    "django_celery_beat",
     "django_filters",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -117,6 +119,14 @@ CHANNEL_LAYERS = {
 }
 
 
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIME_ZONE = TIME_ZONE
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
