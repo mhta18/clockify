@@ -5,6 +5,7 @@ from .factories import TimeLogFactory
 from contracts.tests.factories import FreelancerContractFactory
 from decimal import Decimal
 from users.tests.factories import UserFactory
+
 pytestmark = pytest.mark.django_db
 
 
@@ -26,11 +27,10 @@ class TestTimeTracking:
     def test_payment_calculated_from_contract_on_stop(self):
 
         user = UserFactory()
-        FreelancerContractFactory(user= user,hourly_payment= Decimal("50.00"))
+        FreelancerContractFactory(user=user, hourly_payment=Decimal("50.00"))
 
         start = timezone.now() - timedelta(hours=2)
         end = timezone.now()
 
-        log = TimeLogFactory(user=user,start_time=start,end_time=end)
+        log = TimeLogFactory(user=user, start_time=start, end_time=end)
         assert log.payment == Decimal("100.00")
-

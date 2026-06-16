@@ -4,13 +4,23 @@ from users.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from django.db.models import Count, Q, ExpressionWrapper, fields, Sum, F,Avg,FloatField
+from django.db.models import (
+    Count,
+    Q,
+    ExpressionWrapper,
+    fields,
+    Sum,
+    F,
+    Avg,
+    FloatField,
+)
 from django.db.models.functions import Coalesce
 from users.models import User
 from decimal import Decimal
 from contracts.models import FreelancerContract, EmployerContract
 from timetracking.models import TimeLog
 from .serializers import PlatformReportSerializer
+from .tasks import generate_platform_excel_report
 
 
 @extend_schema(
@@ -24,7 +34,7 @@ class ReportsViewSet(viewsets.ViewSet):
     serializer_class = [PlatformReportSerializer]
 
     @action(detail=False, methods={"get"}, url_path="user-reports")
-    def get_repots(self, request):
+    def get_reports(self, request):
         completed_logs = TimeLog.objects.filter(end_time__isnull=False)
         duration_expression = ExpressionWrapper(
             F("end_time") - F("start_time"), output_field=fields.DurationField()
@@ -50,17 +60,16 @@ class ReportsViewSet(viewsets.ViewSet):
         average_age = User.objects.aggregate(
             average_age=Coalesce(
                 ExpressionWrapper(
-                    Avg("age", filter=Q(age__isnull=False)), 
-                    output_field=FloatField()
-                ), 
-                0.0
+                    Avg("age", filter=Q(age__isnull=False)), output_field=FloatField()
+                ),
+                0.0,
             )
         )["average_age"]
         global_status = User.objects.aggregate(
             total_users=Count("id"),
             total_men=Count("id", filter=Q(gender="male")),
             total_women=Count("id", filter=Q(gender="female")),
-            total_unspecified= Count("id", filter=Q(gender="other")),
+            total_unspecified=Count("id", filter=Q(gender="other")),
         )
 
         freelancer_stats = freelancer_logs.aggregate(
@@ -141,3 +150,22 @@ class ReportsViewSet(viewsets.ViewSet):
         serializer = PlatformReportSerializer(data=dashboard_payload)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+    def export_excel_report(self, request):
+        admin_email = request.data.get("email", request.user.email)
+
+        if not admin_email:
+            return Response(
+                {
+                    "error": "A destination admin email address profile could not be found."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        generate_platform_excel_report.delay(admin_email)
+        return Response(
+            {
+                "message": f"Excel generation started. The summary sheet will be emailed to {admin_email} shortly."
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )

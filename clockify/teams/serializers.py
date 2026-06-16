@@ -106,12 +106,14 @@ class TeamSerializer(serializers.ModelSerializer):
 
         return attrs
 
+
 class TeamMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
 
         # Customize these fields depending on your User model attributes
         fields = ["id", "first_name", "last_name", "email"]
+
 
 from rest_framework import serializers
 from .models import Task, Team
@@ -128,9 +130,9 @@ class TaskSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "status_display",
-            "team",  
+            "team",
             "created_by",
-            "assigned_to", 
+            "assigned_to",
             "deadline",
             "priority",
         ]

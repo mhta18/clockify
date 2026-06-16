@@ -1,12 +1,13 @@
 import pytest
 from rest_framework.test import APIClient
 from users.tests.factories import UserFactory
-from datetime import date,timedelta
+from datetime import date, timedelta
 from rest_framework import status
 from django.urls import reverse
 from contracts.models import FreelancerContract, EmployerContract
-from contracts.tests.factories import FreelancerContractFactory,EmployerContractFactory
-pytestmark =pytest.mark.django_db
+from contracts.tests.factories import FreelancerContractFactory, EmployerContractFactory
+
+pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
@@ -16,9 +17,10 @@ def api_client():
     client.force_authenticate(user=admin_user)
     return client
 
+
 class TestEmployerContractView:
-     
-    def test_list_freelancer_contracts_via_list_view(self,api_client):
+
+    def test_list_freelancer_contracts_via_list_view(self, api_client):
         FreelancerContractFactory.create_batch(3)
 
         url = reverse("freelancer-list")
@@ -26,7 +28,7 @@ class TestEmployerContractView:
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 3
 
-    def test_create_freelancer_contract_vie_viewset(self,api_client):
+    def test_create_freelancer_contract_vie_viewset(self, api_client):
         user = UserFactory()
 
         url = reverse("freelancers-list")
@@ -40,13 +42,13 @@ class TestEmployerContractView:
             "daily_hours_required": 8,
         }
 
-        response = api_client.post(url,data=data,format="json")
+        response = api_client.post(url, data=data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
 
-    def test_update_freelancer_contract_via_viewset(self,api_client):
-        freelancer_contract = FreelancerContractFactory(role_title = "React Developer")
+    def test_update_freelancer_contract_via_viewset(self, api_client):
+        freelancer_contract = FreelancerContractFactory(role_title="React Developer")
 
-        url = reverse("freelancers-detail",kwargs={"pk":freelancer_contract.id})
+        url = reverse("freelancers-detail", kwargs={"pk": freelancer_contract.id})
 
         data = {
             "user": freelancer_contract.user.id,
@@ -54,16 +56,16 @@ class TestEmployerContractView:
             "start_date": str(freelancer_contract.start_date),
             "end_date": str(freelancer_contract.end_date),
             "hourly_payment": "40.00",
-            "daily_hours_required": 8
+            "daily_hours_required": 8,
         }
 
         response = api_client.put(url, data=data, format="json")
         assert response.status_code == status.HTTP_200_OK
 
-    def test_delete_freelancer_contract_via_viewset(self,api_client):
+    def test_delete_freelancer_contract_via_viewset(self, api_client):
         freelancer_contract = FreelancerContractFactory(role_title="React Developer")
 
-        url = reverse("freelancers-detail",kwargs={"pk":freelancer_contract.id})
+        url = reverse("freelancers-detail", kwargs={"pk": freelancer_contract.id})
 
         response = api_client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT

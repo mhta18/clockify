@@ -83,7 +83,6 @@ class ReportsViewSetTestCase(TestCase):
             start_time=now - timedelta(hours=5),
             end_time=now,
         )
-        
 
         TimeLogFactory(
             user=self.emp_woman, project=self.project, start_time=now, end_time=None
@@ -153,7 +152,7 @@ class ReportsViewSetTestCase(TestCase):
 
     def test_other_count_for_freelancer_in_reports(self):
         response = self.client.get("/api/admin-dashbord/user-reports/")
-        print("/////////////////////////////",response.data)
+        print("/////////////////////////////", response.data)
         data = response.json()
 
         overview = data["freelancer_reports"]

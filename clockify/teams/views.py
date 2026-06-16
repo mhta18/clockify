@@ -2,7 +2,12 @@ from django.shortcuts import render
 from rest_framework import viewsets, generics, serializers, status
 from .models import Team, Task
 from rest_framework.response import Response
-from .serializers import TeamSerializer, TaskSerializer, TaskMemberUpdateSerializer,TeamMemberSerializer
+from .serializers import (
+    TeamSerializer,
+    TaskSerializer,
+    TaskMemberUpdateSerializer,
+    TeamMemberSerializer,
+)
 from users.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -10,7 +15,7 @@ from rest_framework.exceptions import NotFound
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
@@ -111,6 +116,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         FormParser,
     )
 
+
 # member
 class TaskListAPIView(generics.ListAPIView):
     queryset = Task.objects.all()
@@ -124,6 +130,7 @@ class TaskListAPIView(generics.ListAPIView):
 
         user = self.request.user
         return Task.objects.filter(assigned_to=user).distinct().order_by("deadline")
+
 
 # member
 class TaskMemberUpdateAPIView(generics.UpdateAPIView):
@@ -192,7 +199,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status"]
 
     def create(self, request, *args, **kwargs):
-        # 🟢 Clean and simple: Let the serializer handle assignment verification automatically
         serializer = self.get_serializer(
             data=request.data, context={"request": request}
         )
@@ -233,10 +239,7 @@ class SupervisorTeamMemberListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         try:
-            # Find the team supervised by this user
             team = Team.objects.get(supervisor=user)
-            # Return the queryset of members belonging to that team
             return team.members.all()
         except Team.DoesNotExist:
-            # Raise a clean 404 exception if they aren't a supervisor
             raise NotFound("You do not have any active teams assigned as a supervisor.")

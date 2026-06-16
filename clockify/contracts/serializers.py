@@ -33,8 +33,9 @@ class EmployerContractSerializer(BaseContract):
     employment_type_display = serializers.CharField(
         source="get_employment_type_display", read_only=True
     )
+
     class Meta:
-        model = EmployerContract 
+        model = EmployerContract
         fields = BaseContract.Meta.fields + [
             "role_title",
             "start_date",
@@ -58,4 +59,3 @@ class FreelanserContractSerializer(BaseContract):
             "daily_hours_required",
             "document_file",
         ]
-    

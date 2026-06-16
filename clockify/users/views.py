@@ -2,21 +2,13 @@ from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiResponse, extend_schema
-
 from rest_framework import viewsets, generics, mixins
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import MultiPartParser, FormParser
-
 from users.ExcelReports.export_excel import export_excel
-
 from drf_excel.renderers import XLSXRenderer
-
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, extend_schema_view
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter, extend_schema_view
 
 from .models import User
 from .permissions import IsAdminUser

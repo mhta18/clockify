@@ -20,12 +20,8 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-TIME_ZONE = 'UTC'
-LANGUAGE_CODE = 'en-us'
-LANGUAGE = [
-    ('en','English'),
-    ('es', 'Spanish'),
-]
+TIME_ZONE = "UTC"
+
 
 LOCAL_PATHS = [
     BASE_DIR / 'locale',
@@ -39,7 +35,7 @@ if not os.path.exists(LOGS_DIR):
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": True,
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
@@ -71,6 +67,11 @@ LOGGING = {
             "propagate": True,
         },
         "api_logger": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery": {
             "handlers": ["console", "file"],
             "level": "INFO",
             "propagate": False,
@@ -113,14 +114,15 @@ INSTALLED_APPS = [
 ASGI_APPLICATION = "clockify.asgi.application"
 
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    "BACKEND": "channels_redis.core.RedisChannelLayer",
+    "CONFIG": {
+        "hosts": ["redis://127.0.0.1:6379/0"],
     },
 }
 
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -141,7 +143,12 @@ MIDDLEWARE = [
     "middleware.APILoggingMiddleware",
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "mhtamira1383@gmail.com"
+EMAIL_HOST_PASSWORD = "SFDBMMhta20"
+DEFAULT_FROM_EMAIL = "mhtamira1383@gmail.com"
 
 ROOT_URLCONF = "clockify.urls"
 
@@ -210,9 +217,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
 
 USE_I18N = True
 

@@ -79,7 +79,6 @@ class TestUserViewSet:
 
         assert response.status_code == 403
 
-
     def test_admin_can_update_user(self):
 
         self.client = APIClient()
@@ -143,7 +142,7 @@ class TestUserViewSet:
         self.client = APIClient()
 
         with freeze_time("2026-05-16 12:00:00"):
-            admin = UserFactory(is_admin=True,email="user1@gmail.com")
+            admin = UserFactory(is_admin=True, email="user1@gmail.com")
             self.client.force_authenticate(user=admin)
 
         UserFactory(email="user3@gmail.com")
@@ -199,7 +198,7 @@ class TestUserViewSet:
     def test_created_at_ordering(self):
         self.client = APIClient()
         with freeze_time("2026-05-14 12:00:00"):
-            admin = UserFactory(is_admin=True,email="user0@gmail.com")
+            admin = UserFactory(is_admin=True, email="user0@gmail.com")
 
         self.client.force_authenticate(user=admin)
         with freeze_time("2026-05-15 12:00:00"):
@@ -218,7 +217,7 @@ class TestUserViewSet:
     # # searching tests----------------------------------------------------------------------------------------------
     def test_view_searching_by_email(self):
         self.client = APIClient()
-        admin = UserFactory(is_admin=True,email="admin@gmail.com")
+        admin = UserFactory(is_admin=True, email="admin@gmail.com")
         self.client.force_authenticate(user=admin)
 
         target_user = UserFactory(email="mahta.m.1183@gmail.com")
@@ -230,7 +229,7 @@ class TestUserViewSet:
 
     def test_view_searching_by_first_name(self):
         self.client = APIClient()
-        admin = UserFactory(is_admin=True,first_name = "leva")
+        admin = UserFactory(is_admin=True, first_name="leva")
         self.client.force_authenticate(user=admin)
 
         target_user = UserFactory(first_name="mahta")

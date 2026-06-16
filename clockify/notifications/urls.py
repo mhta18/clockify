@@ -1,7 +1,6 @@
 from django.urls import path
 from .views import NotificationMarkReadAPIView
 
-
 urlpatterns = [
     path(
         "notifications/mark-read/",
@@ -14,5 +13,3 @@ urlpatterns = [
         name="notification-mark-single-read",
     ),
 ]
-  
-  

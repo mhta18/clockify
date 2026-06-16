@@ -2,14 +2,14 @@
 import pytest
 from teams.tests.factories import (
     TeamFactory,
-)  
+)
 
 
 @pytest.mark.django_db
 class TestTeamsModel:
 
     def test_create_team(self):
-    
+
         team = TeamFactory()
         assert team.supervisor is not None
 

@@ -11,6 +11,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
 )
 
+
 class UserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **extra_fields):
@@ -84,7 +85,7 @@ class User(
     )
 
     age = models.PositiveIntegerField(
-        null=True,  
+        null=True,
         blank=True,
     )
 
@@ -105,9 +106,6 @@ class User(
 
     USERNAME_FIELD = "email"
 
-    
-    
-
     objects = UserManager()
 
     def __str__(self):
@@ -122,9 +120,10 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
         if os.path.isfile(instance.avatar.path):
             os.remove(instance.avatar.path)
 
+
 # A Signal to delete the old avatar file when the user updates the avatar
 @receiver(models.signals.pre_save, sender=User)
-def auto_delete_file_on_change(sender,instance, **kwargs):
+def auto_delete_file_on_change(sender, instance, **kwargs):
     if not instance.pk:
         return False
 
@@ -135,7 +134,7 @@ def auto_delete_file_on_change(sender,instance, **kwargs):
 
     if not old_avatar:
         return False
-    
+
     new_avatar = instance.avatar
 
     if not old_avatar == new_avatar:

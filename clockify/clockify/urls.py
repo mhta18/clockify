@@ -10,7 +10,6 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-
 BASE_NAME = "api/"
 urlpatterns = [
     path("admin/", admin.site.urls),

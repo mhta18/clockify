@@ -29,7 +29,9 @@ class NotificationsTestCase(TestCase):
 
         supervisor = UserFactory(email="supervisor@test com", gender="other", age=34)
         member = UserFactory(email="member@test com", gender="male", age=30)
-        team = TeamFactory(supervisor=supervisor, members=[member.id],name= "Backend first")
+        team = TeamFactory(
+            supervisor=supervisor, members=[member.id], name="Backend first"
+        )
         self.client.force_authenticate(user=supervisor)
         payload = {
             "title": "Build WebSocket Interface",
@@ -41,7 +43,7 @@ class NotificationsTestCase(TestCase):
         }
 
         response = self.client.post("/api/supervisor/tasks/", data=payload)
-        print("/////////////////////////////////",response.data)
+        print("/////////////////////////////////", response.data)
         assert response.status_code == 201
         mock_send_notification.assert_called_once()
         called_recipient = mock_send_notification.call_args[1]["recipient"]
@@ -90,8 +92,9 @@ class NotificationCleanupTest(TestCase):
             recipient=user, title="old", message="old message"
         )
 
-        Notification.objects.filter(
-            id=old_notification.id).update(created_at=now - timezone.timedelta(days=32))
+        Notification.objects.filter(id=old_notification.id).update(
+            created_at=now - timezone.timedelta(days=32)
+        )
 
         call_command("clear_old_notifications")
 

@@ -107,7 +107,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 
 @receiver(models.signals.pre_save, sender=Team)
-def auto_delete_file_on_change(sender,instance, **kwargs):
+def auto_delete_file_on_change(sender, instance, **kwargs):
     if not instance.pk:
         return False
 

@@ -43,8 +43,6 @@ class TestTimeLogViewSet:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["description"] == "new task"
 
-    
-
     def test_resume_action_creates_cloned_log_entry(self, api_client):
         client, user = api_client
         FreelancerContractFactory(user=user)
@@ -53,10 +51,10 @@ class TestTimeLogViewSet:
         two_hours_ago = timezone.now() - timedelta(hours=2)
         one_hour_ago = timezone.now() - timedelta(hours=1)
         past_log = TimeLogFactory(
-           project=project,
+            project=project,
             description="Legacy code branch",
-              user=user,
-           start_time=two_hours_ago,
+            user=user,
+            start_time=two_hours_ago,
             end_time=one_hour_ago,
         )
 

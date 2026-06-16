@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.utils import timezone
 from clockify.settings.base import OTP_EXPIRE_MINUTES
 
+
 class LoginOTP(models.Model):
     email = models.EmailField()
     code = models.CharField(max_length=6)

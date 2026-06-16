@@ -20,12 +20,12 @@ class TestTimeLogSerializer:
         serializer = TimeLogSerializer(instance=log, context={"request": request})
 
         assert "duration_seconds" in serializer.data
-     
+
     def test_validation_blocks_creation_if_timer_already_running(self, rf):
         user = UserFactory()
         EmployerContractFactory(user=user)
-        team = TeamFactory(members = [user.id])
-        project =ProjectFactory(teams=[team.id])
+        team = TeamFactory(members=[user.id])
+        project = ProjectFactory(teams=[team.id])
         TimeLogFactory(user=user, project=project, end_time=None)
         request = rf.post("/")
         request.user = user
@@ -35,4 +35,3 @@ class TestTimeLogSerializer:
 
         with pytest.raises(serializers.ValidationError) as exc_info:
             serializer.is_valid(raise_exception=True)
-

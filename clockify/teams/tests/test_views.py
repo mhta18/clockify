@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIClient
 from users.tests.factories import UserFactory
-from teams.tests.factories import TeamFactory,TaskFactory
+from teams.tests.factories import TeamFactory, TaskFactory
 from rest_framework import status
 from teams.models import Task
 from django.urls import reverse
@@ -36,7 +36,7 @@ class TestTeamViewSet:
         response = self.client.get(self.list_url)
         print("--- API ERROR RESPONSE ---", response.data)
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1 
+        assert len(response.data) == 1
 
         assert response.data[0]["member_count"] == 1
         assert response.data[0]["name"] == team.name
@@ -47,7 +47,7 @@ class TestTeamViewSet:
         fake_logo = SimpleUploadedFile(
             name="test_logo.gif",
             content=b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x4c\x01\x00\x3b",
-            content_type="image/gif"
+            content_type="image/gif",
         )
 
         payload = {
@@ -55,10 +55,10 @@ class TestTeamViewSet:
             "description": "Managing AWS infrastructure",
             "supervisor": supervisor_user.id,
             "members": [supervisor_user.id],
-            "logo": fake_logo, 
+            "logo": fake_logo,
         }
 
-        response = self.client.post(self.list_url,data=payload,format="multipart")
+        response = self.client.post(self.list_url, data=payload, format="multipart")
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "Cloud Operations"
@@ -72,10 +72,10 @@ class TestTeamViewSet:
         payload = {
             "name": "team 1",
             "supervisor": supervisor_user.id,
-            "members":[another_user.id]
+            "members": [another_user.id],
         }
 
-        response = self.client.post(self.list_url,data=payload,format="multipart")
+        response = self.client.post(self.list_url, data=payload, format="multipart")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "supervisor" in response.data
@@ -84,7 +84,7 @@ class TestTeamViewSet:
         TeamFactory(name="DevOps Team")
         TeamFactory(name="Backend Team")
 
-        response = self.client.get(self.list_url,data={"search" : "Backend"})
+        response = self.client.get(self.list_url, data={"search": "Backend"})
 
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
@@ -96,13 +96,13 @@ class TestTeamViewSet:
 
         response = self.client.get(self.list_url, data={"search": "DevOps"})
 
-        assert response.data[0]["description"] =="DevOps Team 1"
+        assert response.data[0]["description"] == "DevOps Team 1"
 
     def test_ordering_teams_by_name(self):
         TeamFactory(name="Alpha Team")
         TeamFactory(name="Backend Team")
 
-        response = self.client.get(self.list_url,data={"ordering" : "name"})
+        response = self.client.get(self.list_url, data={"ordering": "name"})
 
         assert response.data[0]["name"] == "Alpha Team"
 
@@ -123,10 +123,10 @@ class TestTeamViewSet:
             TeamFactory(name="Team 1")
         with freeze_time("2026-05-17 12:00:00"):
             TeamFactory(name="Team 2")
-        response = self.client.get(self.list_url,{"ordering": "created_at"})
+        response = self.client.get(self.list_url, {"ordering": "created_at"})
 
         assert response.status_code == 200
-        assert response.data[0]["name"]== "Team 1"
+        assert response.data[0]["name"] == "Team 1"
 
 
 @pytest.mark.django_db
@@ -141,7 +141,7 @@ class TestTaskViewSet:
 
     def test_supevisor_cannot_create_task_for_foreign_team(self):
 
-        other_supervisor= UserFactory()
+        other_supervisor = UserFactory()
         worker_B = UserFactory()
         team_B = TeamFactory(members=[worker_B], supervisor=other_supervisor)
         self.client.force_authenticate(user=other_supervisor)
@@ -150,17 +150,16 @@ class TestTaskViewSet:
 
         payload = {
             "title": "Cross-team Task Injection",
-            "team": team_B.id, 
+            "team": team_B.id,
             "assigned_to": worker_B.id,
-            "created_by":self.user.id,
+            "created_by": self.user.id,
             "deadline": (timezone.now() + timedelta(days=1)).isoformat(),
             "priority": "MEDIUM",
         }
 
-        response = self.client.post(url,payload, format='json')
-        print("/////////////////////////////////////////////",response.data)
+        response = self.client.post(url, payload, format="json")
+        print("/////////////////////////////////////////////", response.data)
         assert response.status_code == status.HTTP_404_NOT_FOUND
-   
 
     def test_supevisor_can_update_task_for_his_own_team(self):
 
@@ -170,7 +169,14 @@ class TestTaskViewSet:
         self.client.force_authenticate(user=supervisor)
         deadline = (timezone.now() + timedelta(days=1)).isoformat()
 
-        task = TaskFactory(title="Cross-team Task Injection",team=team,assigned_to=worker_B,created_by=supervisor,deadline=deadline,priority=Task.Priority.LOW)
+        task = TaskFactory(
+            title="Cross-team Task Injection",
+            team=team,
+            assigned_to=worker_B,
+            created_by=supervisor,
+            deadline=deadline,
+            priority=Task.Priority.LOW,
+        )
         url = reverse("supervisor-task-detail", kwargs={"pk": task.id})
 
         payload = {
@@ -182,5 +188,5 @@ class TestTaskViewSet:
             "priority": "MEDIUM",
         }
         response = self.client.patch(url, payload, format="json")
-        print("/////////////////////////////////////////////",response.data)
+        print("/////////////////////////////////////////////", response.data)
         assert response.status_code == status.HTTP_200_OK

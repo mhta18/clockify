@@ -7,11 +7,12 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta
 from decimal import Decimal
 from contracts.models import FreelancerContract, EmployerContract
+
 # Create your models here.
 
 
 class TimeLog(models.Model):
-    id = models.UUIDField(primary_key=True, editable=False,default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="time_logs")
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="time_logs"
@@ -26,6 +27,7 @@ class TimeLog(models.Model):
     payment = models.DecimalField(
         max_digits=10, decimal_places=2, default=Decimal("0.00")
     )
+
     class Meta:
         ordering = ["-start_time"]
 
@@ -44,20 +46,26 @@ class TimeLog(models.Model):
         # check if user does not have any contract or belongs to any team
         if not hasattr(self.user, "teams") or not self.user.teams.exists():
             raise ValidationError("You must belong to a team to track time.")
-        
+
         contract = self.user.contract
         current_date = timezone.now().date()
 
-        #Check explicit termination flag
+        # Check explicit termination flag
         if contract.is_terminated:
-            raise ValidationError("You cannot track time because your contract has been terminated.")
+            raise ValidationError(
+                "You cannot track time because your contract has been terminated."
+            )
 
-        #Check calendar timeline boundaries (if they are trying to log time outside of it)
+        # Check calendar timeline boundaries (if they are trying to log time outside of it)
         if current_date < contract.start_date:
-            raise ValidationError(f"Your contract has not started yet. It begins on {contract.start_date}.")
-            
+            raise ValidationError(
+                f"Your contract has not started yet. It begins on {contract.start_date}."
+            )
+
         if current_date > contract.end_date:
-            raise ValidationError(f"Your contract expired on {contract.end_date}. You cannot log additional hours.")
+            raise ValidationError(
+                f"Your contract expired on {contract.end_date}. You cannot log additional hours."
+            )
 
     def save(self, *args, **kwargs):
 
@@ -65,26 +73,34 @@ class TimeLog(models.Model):
             duration_in_hours = Decimal(self.duration.total_seconds()) / Decimal(
                 "3600.00"
             )
-            if hasattr(self.user, 'contract'):
+            if hasattr(self.user, "contract"):
                 base_contract = self.user.contract
 
-                if hasattr(base_contract, 'freelancercontract'):
-                    freelancer_contract = FreelancerContract.objects.filter(user=self.user).first()
+                if hasattr(base_contract, "freelancercontract"):
+                    freelancer_contract = FreelancerContract.objects.filter(
+                        user=self.user
+                    ).first()
 
                     hourly_payment = Decimal(str(freelancer_contract.hourly_payment))
 
-                    duration_in_hours = Decimal(self.duration.total_seconds())/Decimal("3600.00")
+                    duration_in_hours = Decimal(
+                        self.duration.total_seconds()
+                    ) / Decimal("3600.00")
                     self.payment = round(duration_in_hours * hourly_payment, 2)
 
-                elif hasattr(base_contract, 'employercontract'):
-                    employer_contract = EmployerContract.objects.filter(user = self.user).first()
+                elif hasattr(base_contract, "employercontract"):
+                    employer_contract = EmployerContract.objects.filter(
+                        user=self.user
+                    ).first()
                     worked_days_in_month = Decimal("22.00")
-                    mountly_pay= Decimal(employer_contract.monthly_payment)
-                    daily_hours= Decimal(employer_contract.employment_type)
+                    mountly_pay = Decimal(employer_contract.monthly_payment)
+                    daily_hours = Decimal(employer_contract.employment_type)
 
-                    implied_hourly_rate = mountly_pay / (worked_days_in_month * daily_hours)
+                    implied_hourly_rate = mountly_pay / (
+                        worked_days_in_month * daily_hours
+                    )
 
-                    self.payment = round(duration_in_hours * implied_hourly_rate,2)
+                    self.payment = round(duration_in_hours * implied_hourly_rate, 2)
                 else:
                     self.payment = Decimal("0.00")
             else:
