@@ -1,0 +1,81 @@
+1- get ready for interview
+    - write an introduction
+    - practicing for the introduction letter
+    - question i need to ask
+2- adding diffirent language to my app
+
+lets implement translation app by app, starting with contracts:                                         ├───contracts
+│   │   admin.py
+│   │   apps.py
+│   │   models.py
+│   │   serializers.py
+│   │   urls.py
+│   │   views.py
+│   │   __init__.py
+this is the structure , lets start with model.py:import os
+from django.db import models
+from users.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class Contract(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="contract")
+    role_title = models.CharField(max_length=255)
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
+    is_terminated = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.role_title} - {self.user.email}"
+
+
+class FreelancerContract(Contract):
+    hourly_payment = models.DecimalField(max_digits=10, decimal_places=2)
+    daily_hours_required = models.PositiveIntegerField()
+    document_file = models.FileField(
+        upload_to="freelancer_contracts/", null=True, blank=True
+    )
+
+
+class EmployerContract(Contract):
+    class EmploymentHours(models.IntegerChoices):
+        FOUR_HOURS = 4, "Part-time (4 Hours)"
+        FIVE_HOURS = 5, "Part-time (5 Hours)"
+        SIX_HOURS = 6, "Part-time (6 Hours)"
+        SEVEN_HOURS = 7, "Part-time (7 Hours)"
+        EIGHT_HOURS = 8, "Full-time (8 Hours)"
+
+    monthly_payment = models.DecimalField(max_digits=10, decimal_places=2)
+    employment_type = models.IntegerField(
+        choices=EmploymentHours.choices,
+        default=EmploymentHours.EIGHT_HOURS,
+        validators=[MinValueValidator(4), MaxValueValidator(8)],
+        help_text="Designated daily contractual obligation commitment hours.",
+    )
+
+
+@receiver(post_delete, sender=FreelancerContract)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    if instance.document_file:
+        if os.path.isfile(instance.document_file.path):
+            os.remove(instance.document_file.path)
+
+
+@receiver(models.signals.pre_save, sender=FreelancerContract)
+def auto_delete_file_on_change(sender, instance, **kwargs):
+    if not instance.pk:
+        return False
+
+    try:
+        old_contract = sender.objects.get(pk=instance.pk).document_file
+    except sender.DoesNotExist:
+        return False
+
+    new_contract = instance.document_file
+
+    if old_contract and old_contract != new_contract:
+        if os.path.isfile(old_contract.path):
+            os.remove(old_contract.path)

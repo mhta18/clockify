@@ -26,3 +26,5 @@ staticfiles/
 Thumbs.db
 
 /rate-limit-flow/
+
+clockify/clockify/settings/local.py
