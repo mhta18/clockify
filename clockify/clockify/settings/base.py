@@ -87,7 +87,6 @@ AUTH_USER_MODEL = "users.User"
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
     "users",
     "teams",
     "projects",
@@ -96,11 +95,11 @@ INSTALLED_APPS = [
     "timetracking",
     "reports",
     "notifications",
+    "daphne",
     "corsheaders",
     "channels",
     "rest_framework",
     "drf_spectacular",
-    #"drf_spectacular_sidecar",
     "django_celery_beat",
     "django_filters",
     "django.contrib.admin",
@@ -143,12 +142,6 @@ MIDDLEWARE = [
     "middleware.APILoggingMiddleware",
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "mhtamira1383@gmail.com"
-EMAIL_HOST_PASSWORD = "SFDBMMhta20"
-DEFAULT_FROM_EMAIL = "mhtamira1383@gmail.com"
 
 ROOT_URLCONF = "clockify.urls"
 
