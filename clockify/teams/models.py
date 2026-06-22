@@ -9,8 +9,6 @@ from users.models import User
 from django.core.exceptions import ValidationError
 
 # Create your models here.
-
-
 class Team(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50, unique=True)
@@ -30,6 +28,21 @@ class Team(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+        base_slug = self.slug
+        counter = 1
+
+        queryset = Team.objects.filter(slug=self.slug)
+        if self.pk:
+            queryset = queryset.exclude(
+                pk=self.pk
+            ) 
+
+        while queryset.exists():
+            self.slug = f"{base_slug}-{counter}"
+            counter += 1
+            queryset = Team.objects.filter(slug=self.slug)
+            if self.pk:
+                queryset = queryset.exclude(pk=self.pk)
 
         super().save(*args, **kwargs)
 

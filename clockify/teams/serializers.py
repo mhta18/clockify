@@ -34,6 +34,9 @@ class TeamSerializer(serializers.ModelSerializer):
         supervisor = data.get("supervisor")
         members = data.get("members", [])
 
+        team_name = data.get("name")
+        team_logo = data.get("logo")
+
         if self.instance and "members" not in data:
             members = list(self.instance.members.all())
 
@@ -43,6 +46,19 @@ class TeamSerializer(serializers.ModelSerializer):
                     "supervisor": "The supervisor must be assigned as a member of the team."
                 }
             )
+
+        if team_name and team_logo and hasattr(team_logo, "name"):
+            required_name = team_name.strip().lower()
+            file_name_without_extension = os.path.splitext(team_logo.name)[0].lower()
+
+            if required_name not in file_name_without_extension:
+                raise serializers.ValidationError(
+                    {
+                        "logo": f"The uploaded file name must contain the team's name. "
+                        f"Expected to find '{required_name}' inside '{file_name_without_extension}'."
+                    }
+                )
+
         return data
 
     def to_internal_value(self, data):
@@ -69,42 +85,24 @@ class TeamSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(internal_value)
 
-    def validate_Logo_size(self, attrs):
-
+    def validate_logo(self, value):
+        if not value:
+            return value
         valid_extension = ["jpg", "jpeg", "png"]
-        ext = os.path.splitext(attrs.name)[1][1:].lower()
+        ext = os.path.splitext(value.name)[1][1:].lower()
 
         if ext not in valid_extension:
             raise serializers.ValidationError(
                 f"Unsupported file extension. Allowed extensions are: {', '.join(valid_extension)}"
             )
-        max_size = 5 * 1024 * 1024  # 5MB
+        max_size = 0.5 * 1024 * 1024  # 1MB
 
-        if attrs.size > max_size:
+        if value.size > max_size:
             raise serializers.ValidationError(
-                "File size exceeds the maximum limit of 5MB."
+                "File size exceeds the maximum limit of 500KB."
             )
 
-        return attrs
-
-    def validate_Logo_team_name(self, attrs):
-        team_name = attrs.get("name")
-        team_logo = attrs.get("logo")
-
-        if team_name and team_logo:
-            requeired_name = team_name.strip().lower()
-
-            file_name_without_extension = os.pah.splitext(team_logo.name)[0].lower()
-
-            if requeired_name not in file_name_without_extension:
-                raise serializers.ValidationErrorserializers.ValidationError(
-                    {
-                        "logo": f"The uploaded file name must contain the team's name. "
-                        f"Expected to find '{requeired_name}' inside '{file_name_without_extension}'."
-                    }
-                )
-
-        return attrs
+        return value
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):

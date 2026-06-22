@@ -1,5 +1,6 @@
 import logging
 import time
+import json
 
 logger = logging.getLogger("api_logger")
 
@@ -18,24 +19,25 @@ class APILoggingMiddleware:
         user = request.user if request.user.is_authenticated else "Anonymous"
 
 
-        body = ""
+        body = {}
         if path.startswith("/api/") and method in ["POST", "PUT", "PATCH","GET"]:
             try:
-
                 if "multipart/form-data" not in request.content_type:
-                    form_data = dict(request.POST.items())
-                    if "password" in form_data:
-                        body["password"] = "********"
-            except Exception:
-                body = "<Invalid JSON or Binary Data>"
+                    if request.content_type == "application/json" and request.body:
+                        body_data = json.loads(request.body.decode("utf-8"))
+                    else:
+                        body_data = dict(request.POST.items())
 
-        # 3. Process the request and get the response
+                    if "password" in body_data:
+                        body_data["password"] = "********"
+                        
+            except Exception:
+                body_data = {"error": "<Invalid JSON or Binary Data>"}
+
         response = self.get_response(request)
 
-        # 4. Calculate execution duration
         duration = time.time() - start_time
 
-        # 5. Log the combined metrics
         log_message = (
             f"User: {user} | Method: {method} | Path: {path} | "
             f"Status: {response.status_code} | Duration: {duration:.2f}s | Payload: {body}"
